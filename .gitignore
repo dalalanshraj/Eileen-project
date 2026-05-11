@@ -1,0 +1,5 @@
+git-filter-repo.exe/
+# /backend.env
+frontend/src/assets/video.mp4
+*.mp4
+*.mp4

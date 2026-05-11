@@ -1,0 +1,121 @@
+import { useEffect, useState } from "react";
+import api from "../api/axios";
+import AboutSection from "../components/homeSection/AboutSection";
+import FeaturedActivities from "../components/homeSection/FeaturedActivities";
+
+export default function About() {
+  const [images, setImages] = useState([]);
+
+  const getImageUrl = (path) => {
+    if (!path || typeof path !== "string") return "";
+    const base = import.meta.env.VITE_API_URL || "";
+    if (path.startsWith("http")) return path;
+    return base.replace(/\/$/, "") + "/" + path.replace(/^\//, "");
+  };
+
+  useEffect(() => {
+    api
+      .get("/gallery/published")
+      .then((res) => {
+        const data = res.data || [];
+        const formatted = data.map((img) => getImageUrl(img.image));
+        setImages(formatted);
+      })
+      .catch(console.log);
+  }, []);
+
+  const image1 =
+    images[0] || "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
+
+  const image2 =
+    images[1] || "https://images.unsplash.com/photo-1560185007-cde436f6a4d0";
+
+    const image3 =
+    images[4] ;
+
+
+  const heroImage = images[2] || image1;
+
+  return (
+    <>
+      {/* 🔥 HERO (FIXED IMAGE) */}
+      <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center text-white">
+
+        {/* FIXED BACKGROUND */}
+        <div
+          className="absolute inset-0 bg-fixed bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+          }}
+        />
+
+        <div className="absolute inset-0 bg-black/60" />
+
+        <div className="relative text-center px-4 sm:px-6">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4">
+            About Us
+          </h1>
+
+          <p className="text-gray-200 text-sm sm:text-base max-w-xl mx-auto">
+            At Donna Daniel Realty Inc, we turn your property dreams into reality with trust, expertise, and dedication.
+          </p>
+        </div>
+      </section>
+
+      {/* 🔥 ABOUT SECTION */}
+     <AboutSection listingId="69fa0b19d8b673e7d4bf1637" />
+
+       <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center text-white">
+
+        {/* FIXED BACKGROUND */}
+        <div
+          className="absolute inset-0 bg-fixed bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${image3})`,
+          }}
+        />
+
+        {/* <div className="absolute inset-0 bg-black/60" /> */}
+
+        <div className="relative text-center px-4 sm:px-6">
+        </div>
+      </section>
+      {/* 🔥 WHY CHOOSE US */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 md:px-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+
+          {/* CONTENT */}
+          <div>
+            <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-black leading-tight">
+              Why Choose Us
+            </h3>
+
+            <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+              We stand out by offering a client-first approach, market expertise, and unmatched service quality. 
+              Our goal is not just to close deals, but to build lasting relationships based on trust and results.
+            </p>
+
+            <ul className="mt-6 space-y-3 text-gray-700 text-sm sm:text-base">
+              <li>✔ Experienced real estate professionals</li>
+              <li>✔ Transparent and honest dealings</li>
+              <li>✔ Premium property listings</li>
+              <li>✔ Personalized client support</li>
+              <li>✔ End-to-end assistance</li>
+            </ul>
+          </div>
+
+          {/* IMAGE */}
+          <div className="overflow-hidden rounded-2xl group">
+            <img
+              src={image2}
+              className="w-full h-[250px] sm:h-[350px] md:h-[450px] object-cover transition duration-700 group-hover:scale-110"
+              alt="Why Choose Us"
+            />
+          </div>
+
+        </div>
+      </section>
+      <FeaturedActivities />
+    </>
+  );
+}
