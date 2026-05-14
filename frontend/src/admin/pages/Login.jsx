@@ -13,27 +13,42 @@ const Login = () => {
 
   const submit = async (e) => {
     e.preventDefault();
+
     setError("");
     setLoading(true);
 
     try {
-      const res = await api.post("/admin/login", { email, password });
+      const res = await api.post("/admin/login", {
+        email,
+        password,
+      });
 
+      console.log("LOGIN RESPONSE:", res.data);
+
+      // ✅ SAVE TOKEN
       localStorage.setItem("token", res.data.token);
 
-      // ✅ IMPORTANT FIX
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: res.data.name,
-          email: res.data.email,
-          role: "admin",
-        })
-      );
+      // ✅ SAVE USER
+     localStorage.setItem(
+  "user",
+  JSON.stringify({
+    id: res.data.id,
+    name: res.data.name,
+    email: res.data.email,
+    role: res.data.role,
+  })
+);
 
+      // ✅ REDIRECT
       navigate("/admin/dashboard");
+
     } catch (err) {
-      setError("Invalid email or password");
+      console.log(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Invalid email or password"
+      );
     }
 
     setLoading(false);
@@ -41,11 +56,12 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      
+
       <form
         onSubmit={submit}
         className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md"
       >
+
         <h2 className="text-3xl font-bold mb-2 text-center">
           Owner Log In
         </h2>
@@ -56,28 +72,41 @@ const Login = () => {
           </div>
         )}
 
+        {/* EMAIL */}
         <div className="mb-4">
-          <label className="text-sm font-medium">Email</label>
+          <label className="text-sm font-medium">
+            Email
+          </label>
+
           <input
             type="email"
             className="w-full border rounded-lg p-3 mt-1"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
             required
           />
         </div>
 
+        {/* PASSWORD */}
         <div className="mb-5">
-          <label className="text-sm font-medium">Password</label>
+          <label className="text-sm font-medium">
+            Password
+          </label>
+
           <input
             type="password"
             className="w-full border rounded-lg p-3 mt-1"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
             required
           />
         </div>
 
+        {/* BUTTON */}
         <button
           type="submit"
           disabled={loading}
@@ -93,6 +122,7 @@ const Login = () => {
         <p className="text-center text-sm text-gray-500 mt-6">
           Just Beachy Rentals Admin Panel
         </p>
+
       </form>
     </div>
   );

@@ -4,11 +4,19 @@ const AdminRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
-  if (!token || user?.role !== "admin") {
+   if (
+    !user ||
+    (
+      user.role !== "admin" &&
+      user.role !== "superadmin"
+    )
+  ) {
     return <Navigate to="/admin/login" />;
   }
 
+  // ✅ allow
   return children;
 };
+
 
 export default AdminRoute;

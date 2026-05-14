@@ -24,8 +24,17 @@ export const isAuth = (req, res, next) => {
 };
 
 export const isAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== "admin") {
-    return res.status(403).json({ message: "Admin only" });
+  if (
+    !req.user ||
+    (
+      req.user.role !== "admin" &&
+      req.user.role !== "superadmin"
+    )
+  ) {
+    return res.status(403).json({
+      message: "Admin only",
+    });
   }
+
   next();
 };

@@ -70,10 +70,10 @@ const Sidebar = () => {
           Listings
         </NavLink>
 
-        {/* <NavLink to="/admin/users" className={linkClass}>
+        <NavLink to="/admin/users" className={linkClass}>
           <MdPeople size={20} />
           Users
-        </NavLink> */}
+        </NavLink>
 
          {/* <NavLink to="/admin/listings/property_add" className={linkClass}>
           <MdAddBox size={20} />
