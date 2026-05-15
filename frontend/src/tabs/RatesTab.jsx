@@ -206,56 +206,42 @@ export default function RatesTab({ listingId, goNextTab }) {
           />
 
           {/* FROM DATE */}
-         <DatePicker
-  selected={form.from}
-  onChange={(date) =>
-    setForm({
-      ...form,
-      from: date,
-    })
-  }
+          <DatePicker
+            selected={form.from}
+            onChange={(date) =>
+              setForm({
+                ...form,
+                from: date,
+              })
+            }
+            selectsStart
+            startDate={form.from}
+            endDate={form.to}
+            dateFormat="MM/dd/yyyy"
+            placeholderText="MM/DD/YYYY"
+            className="border p-2 w-full"
+            isClearable
+            portalId="root"
+          />
 
-  selectsStart
-  startDate={form.from}
-  endDate={form.to}
-
-  dateFormat="MM/dd/yyyy"
-
-  placeholderText="MM/DD/YYYY"
-
-  className="border p-2 w-full"
-
-  isClearable
-
-  portalId="root"
-/>
-
-      <DatePicker
-  selected={form.to}
-
-  onChange={(date) =>
-    setForm({
-      ...form,
-      to: date,
-    })
-  }
-
-  selectsEnd
-  startDate={form.from}
-  endDate={form.to}
-
-  minDate={form.from}
-
-  dateFormat="MM/dd/yyyy"
-
-  placeholderText="MM/DD/YYYY"
-
-  className="border p-2 w-full"
-
-  isClearable
-
-  portalId="root"
-/>
+          <DatePicker
+            selected={form.to}
+            onChange={(date) =>
+              setForm({
+                ...form,
+                to: date,
+              })
+            }
+            selectsEnd
+            startDate={form.from}
+            endDate={form.to}
+            minDate={form.from}
+            dateFormat="MM/dd/yyyy"
+            placeholderText="MM/DD/YYYY"
+            className="border p-2 w-full"
+            isClearable
+            portalId="root"
+          />
           {/* NIGHTLY */}
           <input
             type="number"
