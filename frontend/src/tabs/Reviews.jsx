@@ -348,27 +348,15 @@ export default function ReviewsTab({ listingId }) {
                   </button>
                 ))}
               </div>
+              <div className="flex gap-2 mb-3">
               <input
                 placeholder="Reviews Title"
-                className="border p-2 w-full rounded"
+                className="border p-1 w-full rounded"
                 onChange={(e) =>
                   setReviewForm({ ...reviewForm, title: e.target.value })
                 }
               />
-
-              <textarea
-                placeholder="Your Review"
-                rows={4}
-                className="border p-2 w-full rounded"
-                value={reviewForm.review}
-                onChange={(e) =>
-                  setReviewForm({
-                    ...reviewForm,
-                    review: e.target.value,
-                  })
-                }
-              />
-              <label className="block mb-2 font-semibold">Stay Dates</label>
+                <label className="block mb-2 font-semibold"></label>
               <DatePicker
                 selected={
                   reviewForm.stayDate ? new Date(reviewForm.stayDate) : null
@@ -392,11 +380,25 @@ export default function ReviewsTab({ listingId }) {
                   }
                 }}
                 dateFormat="yyyy-MM-dd"
-                placeholderText="YYYY-MM-DD"
-                className="border p-2 w-full mb-4"
+                placeholderText="Stay Dates"
+                className="border p-1 w-full rounded"
                 isClearable
                 portalId="root"
               />
+</div>
+              <textarea
+                placeholder="Your Review"
+                rows={4}
+                className="border p-2 w-full rounded"
+                value={reviewForm.review}
+                onChange={(e) =>
+                  setReviewForm({
+                    ...reviewForm,
+                    review: e.target.value,
+                  })
+                }
+              />
+            
 
               <button
                 onClick={submitReview}
