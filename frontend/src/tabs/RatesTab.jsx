@@ -206,42 +206,134 @@ export default function RatesTab({ listingId, goNextTab }) {
           />
 
           {/* FROM DATE */}
-          <DatePicker
-            selected={form.from}
-            onChange={(date) =>
-              setForm({
-                ...form,
-                from: date,
-              })
-            }
-            selectsStart
-            startDate={form.from}
-            endDate={form.to}
-            dateFormat="MM/dd/yyyy"
-            placeholderText="MM/DD/YYYY"
-            className="border p-2 w-full"
-            isClearable
-            portalId="root"
-          />
+       <DatePicker
+  selected={form.from}
 
-          <DatePicker
-            selected={form.to}
-            onChange={(date) =>
-              setForm({
-                ...form,
-                to: date,
-              })
-            }
-            selectsEnd
-            startDate={form.from}
-            endDate={form.to}
-            minDate={form.from}
-            dateFormat="MM/dd/yyyy"
-            placeholderText="MM/DD/YYYY"
-            className="border p-2 w-full"
-            isClearable
-            portalId="root"
-          />
+  onChange={(date) =>
+    setForm({
+      ...form,
+      from: date,
+    })
+  }
+
+  onChangeRaw={(e) => {
+
+    let value = e.target.value;
+
+    // convert - to /
+    value = value.replaceAll("-", "/");
+
+    e.target.value = value;
+
+    const parts = value.split("/");
+
+    if (parts.length === 3) {
+
+      const [month, day, year] = parts;
+
+      if (
+        month.length === 2 &&
+        day.length === 2 &&
+        year.length === 4
+      ) {
+
+        const parsed = new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day),
+          12
+        );
+
+        if (!isNaN(parsed)) {
+
+          setForm({
+            ...form,
+            from: parsed,
+          });
+        }
+      }
+    }
+  }}
+
+  selectsStart
+  startDate={form.from}
+  endDate={form.to}
+
+  dateFormat="MM/dd/yyyy"
+
+  placeholderText="MM/DD/YYYY"
+
+  className="border p-2 w-full"
+
+  isClearable
+
+  portalId="root"
+/>
+
+         <DatePicker
+  selected={form.to}
+
+  onChange={(date) =>
+    setForm({
+      ...form,
+      to: date,
+    })
+  }
+
+  onChangeRaw={(e) => {
+
+    let value = e.target.value;
+
+    value = value.replaceAll("-", "/");
+
+    e.target.value = value;
+
+    const parts = value.split("/");
+
+    if (parts.length === 3) {
+
+      const [month, day, year] = parts;
+
+      if (
+        month.length === 2 &&
+        day.length === 2 &&
+        year.length === 4
+      ) {
+
+        const parsed = new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day),
+          12
+        );
+
+        if (!isNaN(parsed)) {
+
+          setForm({
+            ...form,
+            to: parsed,
+          });
+        }
+      }
+    }
+  }}
+
+  selectsEnd
+  startDate={form.from}
+  endDate={form.to}
+
+  minDate={form.from}
+
+  dateFormat="MM/dd/yyyy"
+
+  placeholderText="MM/DD/YYYY"
+
+  className="border p-2 w-full"
+
+  isClearable
+
+  portalId="root"
+/>
           {/* NIGHTLY */}
           <input
             type="number"
