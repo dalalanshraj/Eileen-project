@@ -27,7 +27,7 @@ export const publishListing = async (req, res) => {
 
     res.json({
       message: "Listing published successfully",
-      listing
+      listing,
     });
   } catch (err) {
     res.status(500).json({ error: "Publish failed" });
@@ -39,7 +39,7 @@ export const publishListing = async (req, res) => {
 export const createListing = async (req, res) => {
   const listing = new Listing({
     property: req.body,
-    status: "draft"
+    status: "draft",
   });
 
   await listing.save();
@@ -59,14 +59,13 @@ export const updateProperty = async (req, res) => {
       id,
       {
         $set: {
-          property: req.body
-        }
+          property: req.body,
+        },
       },
-      { new: true }
+      { new: true },
     );
 
     res.json(listing);
-
   } catch (err) {
     // console.error("PROPERTY UPDATE ERROR FULL:", err);
     res.status(500).json({ error: "Property update failed" });
@@ -81,7 +80,6 @@ export const getAllListings = async (req, res) => {
 
     const updatedListings = await Promise.all(
       listings.map(async (listing) => {
-
         // 🔔 Inquiry count
         const inquiryCount = await Inquiry.countDocuments({
           property: listing._id,
@@ -95,12 +93,10 @@ export const getAllListings = async (req, res) => {
           inquiryCount,
           reviewCount,
         };
-      })
+      }),
     );
 
     res.json(updatedListings);
-
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -111,8 +107,7 @@ export const getAllListings = async (req, res) => {
 export const getListingById = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
-    if (!listing)
-      return res.status(404).json({ error: "Listing not found" });
+    if (!listing) return res.status(404).json({ error: "Listing not found" });
 
     res.json(listing);
   } catch (err) {
@@ -130,7 +125,6 @@ export const deleteListing = async (req, res) => {
     res.status(500).json({ error: "Delete failed" });
   }
 };
-
 
 export const updateDescription = async (req, res) => {
   const listing = await Listing.findById(req.params.id);
@@ -152,7 +146,7 @@ export const updateDescription = async (req, res) => {
 };
 export const updateAmenities = async (req, res) => {
   await Listing.findByIdAndUpdate(req.params.id, {
-    amenities: req.body
+    amenities: req.body,
   });
 
   res.json({ success: true });
@@ -188,14 +182,14 @@ export const updateLocation = async (req, res) => {
       listing.location = {
         lat: Number(lat),
         lng: Number(lng),
-        address: address || ""
+        address: address || "",
       };
 
       await listing.save();
 
       return res.json({
         success: true,
-        location: listing.location
+        location: listing.location,
       });
     }
 
@@ -208,16 +202,16 @@ export const updateLocation = async (req, res) => {
         {
           params: {
             address,
-            key: process.env.GOOGLE_MAPS_KEY
-          }
-        }
+            key: process.env.GOOGLE_MAPS_KEY,
+          },
+        },
       );
 
       const result = geoRes.data.results[0];
 
       if (!result) {
         return res.status(400).json({
-          message: "Invalid address"
+          message: "Invalid address",
         });
       }
 
@@ -226,26 +220,25 @@ export const updateLocation = async (req, res) => {
       listing.location = {
         lat: location.lat,
         lng: location.lng,
-        address: result.formatted_address
+        address: result.formatted_address,
       };
 
       await listing.save();
 
       return res.json({
         success: true,
-        location: listing.location
+        location: listing.location,
       });
     }
 
     res.status(400).json({
-      message: "Provide lat/lng or address"
+      message: "Provide lat/lng or address",
     });
-
   } catch (error) {
     // console.error("LOCATION ERROR:", error.message);
 
     res.status(500).json({
-      message: "Location update failed"
+      message: "Location update failed",
     });
   }
 };
@@ -257,11 +250,10 @@ export const updateActivities = async (req, res) => {
     const listing = await Listing.findByIdAndUpdate(
       id,
       { activities: req.body },
-      { new: true }
+      { new: true },
     );
 
-    if (!listing)
-      return res.status(404).json({ error: "Listing not found" });
+    if (!listing) return res.status(404).json({ error: "Listing not found" });
 
     res.json({ message: "Activities saved", listing });
   } catch (err) {
@@ -272,7 +264,8 @@ export const updatePhotos = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const newPhotos = req.files?.map(file => `/gallery-uploads/${file.filename}`) || [];
+    const newPhotos =
+      req.files?.map((file) => `/gallery-uploads/${file.filename}`) || [];
 
     if (!newPhotos.length) {
       return res.status(400).json({ error: "No photos uploaded" });
@@ -280,14 +273,11 @@ export const updatePhotos = async (req, res) => {
 
     const listing = await Listing.findById(id);
 
-    if (!listing)
-      return res.status(404).json({ error: "Listing not found" });
+    if (!listing) return res.status(404).json({ error: "Listing not found" });
 
     // ✅ total photos limit
     if (listing.photos.length + newPhotos.length > 30) {
-      return res
-        .status(400)
-        .json({ error: "Maximum 30 photos allowed" });
+      return res.status(400).json({ error: "Maximum 30 photos allowed" });
     }
 
     // ✅ append photos
@@ -299,7 +289,6 @@ export const updatePhotos = async (req, res) => {
       message: "Photos uploaded successfully",
       photos: listing.photos,
     });
-
   } catch (err) {
     // console.error(err);
     res.status(500).json({ error: "Photo upload failed" });
@@ -317,9 +306,7 @@ export const deletePhoto = async (req, res) => {
     }
 
     // remove from DB
-    listing.photos = listing.photos.filter(
-      (p) => !p.includes(filename)
-    );
+    listing.photos = listing.photos.filter((p) => !p.includes(filename));
 
     await listing.save();
 
@@ -334,7 +321,6 @@ export const deletePhoto = async (req, res) => {
       message: "Photo deleted",
       photos: listing.photos,
     });
-
   } catch (err) {
     // console.error(err);
     res.status(500).json({ error: "Delete failed" });
@@ -348,7 +334,7 @@ export const updateVideo = async (req, res) => {
     const listing = await Listing.findByIdAndUpdate(
       id,
       { video: req.body },
-      { new: true }
+      { new: true },
     );
 
     if (!listing) {
@@ -357,9 +343,8 @@ export const updateVideo = async (req, res) => {
 
     res.json({
       message: "Video updated successfully",
-      listing
+      listing,
     });
-
   } catch (err) {
     // console.error(err);
     res.status(500).json({ error: "Failed to update video" });
@@ -372,22 +357,22 @@ export const addReview = async (req, res) => {
 
   const review = {
     ...req.body,
-    published: false
+    published: false,
   };
 
   const listing = await Listing.findByIdAndUpdate(
     id,
     { $push: { reviews: review } },
-    { new: true }
+    { new: true },
   );
 
   res.json({
     message: "Review submitted",
-    review
+    review,
   });
 };
 
-//! Publish Review 
+//! Publish Review
 export const publishReview = async (req, res) => {
   const listing = await Listing.findById(req.params.id);
 
@@ -400,7 +385,7 @@ export const publishReview = async (req, res) => {
   res.json({ success: true });
 };
 
-//! Admin Reply Review 
+//! Admin Reply Review
 export const replyReview = async (req, res) => {
   const listing = await Listing.findById(req.params.id);
 
@@ -413,12 +398,12 @@ export const replyReview = async (req, res) => {
   res.json({ success: true });
 };
 
-//! if Admin not show Reviews 
+//! if Admin not show Reviews
 export const deleteReview = async (req, res) => {
   const listing = await Listing.findById(req.params.id);
 
   listing.reviews = listing.reviews.filter(
-    r => r._id.toString() !== req.params.reviewId
+    (r) => r._id.toString() !== req.params.reviewId,
   );
 
   await listing.save();
@@ -427,39 +412,64 @@ export const deleteReview = async (req, res) => {
 };
 
 export const getAllReviews = async (req, res) => {
+
   const page = Number(req.query.page) || 1;
+
   const limit = 5;
+
+  const propertyFilter = req.query.property;
 
   const listings = await Listing.find();
 
   let allReviews = [];
 
   listings.forEach((listing) => {
+
     listing.reviews.forEach((r) => {
-      if (r.published) {
-        allReviews.push({
-          _id: r._id,
-          review: r.message,
-          rating: r.rating,
-          user: r.name,
-          stayDate: r.stayDate,
-          listingId: listing._id,
-          property: {
-            title: listing.property?.title,
-            image: listing.photos?.[0],
-          },
-        });
+
+      if (!r.published) return;
+
+      if (
+        propertyFilter &&
+        propertyFilter !== "all" &&
+        listing.property?.title !== propertyFilter
+      ) {
+        return;
       }
+
+      allReviews.push({
+        _id: r._id,
+
+        review: r.message,
+
+        rating: r.rating,
+
+        user: r.name,
+
+        stayDate: r.stayDate,
+
+        listingId: listing._id,
+
+        property: {
+          title: listing.property?.title || "",
+
+          image: listing.photos?.[0] || "",
+        },
+      });
     });
   });
 
   const start = (page - 1) * limit;
+
   const paginated = allReviews.slice(start, start + limit);
 
   res.json({
     reviews: paginated,
+
     total: allReviews.length,
+
     page,
+
     pages: Math.ceil(allReviews.length / limit),
   });
 };
@@ -517,9 +527,7 @@ export const editRate = async (req, res) => {
   res.json({ rates: listing.rates });
 };
 
-
-
-// LISTING PUBLISH AND UNPUBLISH 
+// LISTING PUBLISH AND UNPUBLISH
 export const toggleListingStatus = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
@@ -528,8 +536,7 @@ export const toggleListingStatus = async (req, res) => {
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    listing.status =
-      listing.status === "published" ? "draft" : "published";
+    listing.status = listing.status === "published" ? "draft" : "published";
 
     await listing.save();
 
@@ -546,31 +553,27 @@ export const toggleListingStatus = async (req, res) => {
 
 export const getPublishedListings = async (req, res) => {
   try {
-
     const listings = await Listing.find({ status: "published" });
 
     const today = new Date();
 
     const deals = await Deal.find({
       displayFrom: { $lte: today },
-      displayEnd: { $gte: today }
+      displayEnd: { $gte: today },
     });
 
-    const result = listings.map(l => {
-
+    const result = listings.map((l) => {
       const deal = deals.find(
-        d => d.listingId.toString() === l._id.toString()
+        (d) => d.listingId.toString() === l._id.toString(),
       );
 
       return {
         ...l._doc,
-        deal: deal || null
+        deal: deal || null,
       };
-
     });
 
     res.json(result);
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
