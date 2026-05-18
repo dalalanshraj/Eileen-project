@@ -216,7 +216,7 @@ export default function PropertyTab({
           <input
             className="w-full rounded-lg border border-gray-300 px-4 py-2
                        focus:ring-2 focus:ring-blue-500"
-            placeholder="+91 98765 43210"
+            placeholder="(123) 456-7890"
             value={form.altPhone}
             onChange={e => setForm({ ...form, altPhone: e.target.value })}
           />
