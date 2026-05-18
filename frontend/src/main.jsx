@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import App from "./App";
 import "./index.css";
 import { ModalProvider } from "./context/ModalContext";
-
+import "leaflet/dist/leaflet.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   
   <ModalProvider>

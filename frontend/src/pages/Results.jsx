@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useRef } from "react";
 import { useLocation, Link } from "react-router-dom";
 import api from "../api/axios.js";
 import PropertyMap from "../components/PropertyMap";
@@ -15,44 +15,44 @@ const ResultsPage = () => {
   // ==============================
   // FETCH SEARCH RESULTS
   // ==============================
-useEffect(() => {
-  const loadResults = async () => {
-    try {
-      const params = new URLSearchParams(location.search);
+  useEffect(() => {
+    const loadResults = async () => {
+      try {
+        const params = new URLSearchParams(location.search);
 
-      const checkIn = params.get("checkIn");
-      const checkOut = params.get("checkOut");
+        const checkIn = params.get("checkIn");
+        const checkOut = params.get("checkOut");
 
-      const res = await api.get("/search", {
-        params: { checkIn, checkOut },
-      });
+        const res = await api.get("/search", {
+          params: { checkIn, checkOut },
+        });
 
-      // ✅ DIRECT SET (backend already deal bhej raha hai)
-      setProperties(res.data?.results || []);
-    } catch (err) {
-      console.error("Search error:", err);
-      setProperties([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+        // ✅ DIRECT SET (backend already deal bhej raha hai)
+        setProperties(res.data?.results || []);
+      } catch (err) {
+        console.error("Search error:", err);
+        setProperties([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  loadResults();
-}, [location.search]);
+    loadResults();
+  }, [location.search]);
 
-// useEffect(() => {
-//   const loadDeals = async () => {
-//     try {
-//       const res = await api.get("/deals/active");
-//       setDeals(res.data || []);
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
+  // useEffect(() => {
+  //   const loadDeals = async () => {
+  //     try {
+  //       const res = await api.get("/deals/active");
+  //       setDeals(res.data || []);
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
 
-//   loadDeals();
-// }, []);
-  
+  //   loadDeals();
+  // }, []);
+
   return (
     <>
       {/* ================= HERO ================= */}
@@ -71,7 +71,6 @@ useEffect(() => {
 
       {/* ================= CONTENT ================= */}
       <div className="max-w-7xl mx-auto px-6 py-10">
-
         {loading && (
           <p className="text-center text-gray-500 text-lg">
             Loading available properties...
@@ -86,7 +85,6 @@ useEffect(() => {
 
         {!loading && properties.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
             {/* ================= MAP ================= */}
             <div className="lg:col-span-2 h-[80vh] rounded-xl overflow-hidden border">
               <PropertyMap
@@ -97,7 +95,6 @@ useEffect(() => {
 
             {/* ================= LIST ================= */}
             <div className="h-[80vh] overflow-y-auto space-y-4">
-
               {properties.map((p) => {
                 // console.log("API:", import.meta.env.VITE_API_URL);
                 // console.log("PHOTO:", p.photos?.[0]);
@@ -116,9 +113,10 @@ useEffect(() => {
                       setSelectedProperty(p);
                     }}
                     className={`border rounded-xl p-4 cursor-pointer transition
-                      ${selectedProperty?._id === p._id
-                        ? "border-blue-600 bg-blue-50"
-                        : "hover:bg-gray-50"
+                      ${
+                        selectedProperty?._id === p._id
+                          ? "border-blue-600 bg-blue-50"
+                          : "hover:bg-gray-50"
                       }`}
                   >
                     {/* IMAGE */}
@@ -140,7 +138,10 @@ useEffect(() => {
 
                       <Link
                         to={`/${p._id}`}
-                        onClick={(e) => e.stopPropagation()}
+                        key={p._id}
+                        onClick={() => {
+                          setSelectedProperty(p);
+                        }}
                       >
                         <ArrowUpRight className="w-6 h-6 text-sky-600 hover:text-sky-800" />
                       </Link>
@@ -148,8 +149,8 @@ useEffect(() => {
 
                     {/* DETAILS */}
                     <p className="text-sm text-gray-600 mt-1">
-                      {p.property?.maxSleeps} guests •{" "}
-                      {p.property?.bathrooms} baths
+                      {p.property?.maxSleeps} guests • {p.property?.bathrooms}{" "}
+                      baths
                     </p>
 
                     {/* PRICE */}
@@ -170,7 +171,7 @@ useEffect(() => {
                               ${finalPrice}
                             </p>
                             <p className="text-green-600 font-bold">
-                              ${p.deal.discountedRate} / night 
+                              ${p.deal.discountedRate} / night
                             </p>
                           </div>
                         );

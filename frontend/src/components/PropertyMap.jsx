@@ -1,124 +1,190 @@
-import { useState, useRef, useEffect } from "react";
 import {
-  GoogleMap,
+  MapContainer,
+  TileLayer,
   Marker,
-  InfoWindow,
-  useLoadScript,
-} from "@react-google-maps/api";
+  Popup,
+  useMap,
+} from "react-leaflet";
 
-const mapContainerStyle = { width: "100%", height: "100%" };
-const defaultCenter = { lat: 30.3831, lng: -86.4974 };
+import L from "leaflet";
 
-const PropertyMap = ({ properties, selectedProperty }) => {
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+import { useEffect, useRef } from "react";
 
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-  });
+import "leaflet/dist/leaflet.css";
 
-  const [selected, setSelected] = useState(null);
-  const mapRef = useRef(null);
+// ==============================
+// FIX MARKER ICON
+// ==============================
+delete L.Icon.Default.prototype._getIconUrl;
 
-  const onMapLoad = (map) => {
-    mapRef.current = map;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
 
-    // 🟢 FIT MAP TO ALL MARKERS
-    if (properties.length > 0) {
-      const bounds = new window.google.maps.LatLngBounds();
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
 
-      properties.forEach((p) => {
-        if (p.location?.lat && p.location?.lng) {
-          bounds.extend({
-            lat: p.location.lat,
-            lng: p.location.lng,
-          });
-        }
-      });
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
-      map.fitBounds(bounds);
-    }
-  };
+// ==============================
+// MAP FOCUS COMPONENT
+// ==============================
+function ChangeMapView({ selectedProperty }) {
 
-  // 🟢 Focus when clicking list item
+  const map = useMap();
+
   useEffect(() => {
-    if (
-      selectedProperty &&
-      selectedProperty.location?.lat &&
-      selectedProperty.location?.lng &&
-      mapRef.current
-    ) {
-      mapRef.current.panTo({
-        lat: selectedProperty.location.lat,
-        lng: selectedProperty.location.lng,
-      });
-      mapRef.current.setZoom(14);
-      setSelected(selectedProperty);
-    }
-  }, [selectedProperty]);
 
-  if (!isLoaded) return <div>Loading Map…</div>;
+    if (
+      selectedProperty?.location?.lat &&
+      selectedProperty?.location?.lng
+    ) {
+
+      map.setView(
+        [
+          Number(selectedProperty.location.lat),
+          Number(selectedProperty.location.lng),
+        ],
+        15
+      );
+    }
+
+  }, [selectedProperty, map]);
+
+  return null;
+}
+function PropertyMarker({
+  property,
+  selectedProperty,
+}) {
+
+  const markerRef = useRef(null);
+
+  const lat = Number(
+    property?.location?.lat
+  );
+
+  const lng = Number(
+    property?.location?.lng
+  );
+
+  useEffect(() => {
+
+    if (
+      selectedProperty?._id === property._id &&
+      markerRef.current
+    ) {
+
+      markerRef.current.openPopup();
+    }
+
+  }, [selectedProperty, property]);
+
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng)
+  ) {
+    return null;
+  }
+
+  const cleanPath =
+    property?.photos?.[0]?.replace(
+      /^\/api/,
+      ""
+    );
+
+  const imageUrl = cleanPath
+    ? `${import.meta.env.VITE_API_URL}${cleanPath}`
+    : "https://via.placeholder.com/200x120";
 
   return (
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      onLoad={onMapLoad}
-      center={defaultCenter}
-      zoom={10}
+    <Marker
+      ref={markerRef}
+
+      position={[lat, lng]}
     >
-      {/* 🟢 MULTIPLE MARKERS */}
-      {properties.map((property) => {
-        if (!property.location?.lat || !property.location?.lng) return null;
 
-        return (
-          <Marker
-            key={property._id}
-            position={{
-              lat: property.location.lat,
-              lng: property.location.lng,
-            }}
-            onClick={() => setSelected(property)}
-            icon={
-              selected?._id === property._id
-                ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-                : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-            }
+      <Popup>
+
+        <div className="w-52">
+
+          <img
+            src={imageUrl}
+
+            alt={property?.property?.title}
+
+            className="w-full h-28 object-cover rounded mb-2"
           />
-        );
-      })}
 
-      {/* 🟢 INFO WINDOW */}
+          <h3 className="font-semibold text-sm">
+            {property?.property?.title}
+          </h3>
 
-      {selected && selected.location && (
+          <p className="text-xs text-gray-500 mt-1">
+            {property?.location?.address}
+          </p>
 
-        <InfoWindow
-          position={{
-            lat: selected.location.lat,
-            lng: selected.location.lng,
-          }}
-          onCloseClick={() => setSelected(null)}
-        >
+        </div>
 
-          <div className="w-48">
+      </Popup>
 
-            <img
-              src={
-                selected?.photos?.[0]
-                  ? `${import.meta.env.VITE_API_URL}${selected.photos[0].replace(/^\/api/, "")}`
-                  : "https://via.placeholder.com/200x120"
-              }
-              alt={selected?.property?.title}
-              className="w-full h-24 object-cover rounded mb-2"
-            />
-            <h3 className="font-semibold text-sm">
-              {selected.property?.title}
-            </h3>
-            <p className="text-xs text-gray-600">
-              {selected.location.address}
-            </p>
-          </div>
-        </InfoWindow>
-      )}
-    </GoogleMap>
+    </Marker>
+  );
+}
+// ==============================
+// MAIN COMPONENT
+// ==============================
+const PropertyMap = ({
+  properties,
+  selectedProperty,
+}) => {
+
+  const defaultCenter = [
+    30.3831,
+    -86.4974,
+  ];
+
+  return (
+    <MapContainer
+      center={defaultCenter}
+
+      zoom={11}
+
+      style={{
+        width: "100%",
+        height: "100%",
+      }}
+
+      className="rounded-xl z-0"
+    >
+
+      {/* MAP TILE */}
+      <TileLayer
+        attribution='&copy; OpenStreetMap contributors'
+
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+      {/* AUTO FOCUS */}
+      <ChangeMapView
+        selectedProperty={selectedProperty}
+      />
+
+      {/* MARKERS */}
+    {properties.map((property) => (
+
+  <PropertyMarker
+    key={property._id}
+
+    property={property}
+
+    selectedProperty={selectedProperty}
+  />
+))}
+
+    </MapContainer>
   );
 };
 

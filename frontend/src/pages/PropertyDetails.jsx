@@ -120,9 +120,13 @@ const PropertyDetail = () => {
   };
 
   // ================= MAP =================
-  const getMapEmbedUrl = (lat, lng) =>
-    `https://www.google.com/maps?q=${lat},${lng}&z=14&output=embed`;
+  const getMapEmbedUrl = (lat, lng) => {
 
+  const finalLat = Number(lat);
+  const finalLng = Number(lng);
+
+  return `https://maps.google.com/maps?q=${finalLat},${finalLng}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+};
   const formatDate = (date) => {
     if (!date) return "";
 
@@ -240,17 +244,34 @@ const PropertyDetail = () => {
           )}
 
           {/* MAP */}
-          {listing.location?.lat && listing.location?.lng && (
-            <div className="mt-10">
-              <h2 className="text-2xl font-semibold mb-4">Location</h2>
-              <iframe
-                src={getMapEmbedUrl(listing.location.lat, listing.location.lng)}
-                className="w-full h-96 rounded-xl border"
-                allowFullScreen
-                title="map"
-              />
-            </div>
-          )}
+          {listing?.location?.lat &&
+ listing?.location?.lng && (
+
+  <div className="mt-10">
+
+    <h2 className="text-2xl font-semibold mb-4">
+      Location
+    </h2>
+
+    <iframe
+      src={getMapEmbedUrl(
+        listing.location.lat,
+        listing.location.lng
+      )}
+
+      className="w-full h-96 rounded-xl border"
+
+      loading="lazy"
+
+      allowFullScreen
+
+      referrerPolicy="no-referrer-when-downgrade"
+
+      title="Property Location"
+    />
+
+  </div>
+)}
 
           {/* REVIEWS */}
           {publishedReviews.length > 0 && (

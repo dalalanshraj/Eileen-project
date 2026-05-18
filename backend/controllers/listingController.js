@@ -166,19 +166,96 @@ export const deleteRate = async (req, res) => {
 };
 
 export const updateLocation = async (req, res) => {
-  try {
-    const { lat, lng, address } = req.body;
 
-    const listing = await Listing.findById(req.params.id);
+  try {
+
+    let {
+      lat,
+      lng,
+      address,
+    } = req.body;
+
+    const listing =
+      await Listing.findById(
+        req.params.id
+      );
 
     if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+
+      return res.status(404).json({
+        message: "Listing not found",
+      });
     }
 
-    // =============================
+    // ====================================
     // CASE 1: LAT / LNG PROVIDED
-    // =============================
-    if (lat && lng) {
+    // ====================================
+
+    if (
+      lat !== undefined &&
+      lng !== undefined
+    ) {
+
+      // convert to numbers
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+
+      // =========================
+      // VALIDATION
+      // =========================
+
+      if (
+        isNaN(lat) ||
+        isNaN(lng)
+      ) {
+
+        return res.status(400).json({
+          message:
+            "Invalid latitude or longitude",
+        });
+      }
+
+      // latitude range
+      if (
+        lat > 90 ||
+        lat < -90
+      ) {
+
+        return res.status(400).json({
+          message:
+            "Latitude must be between -90 and 90",
+        });
+      }
+
+      // longitude range
+      if (
+        lng > 180 ||
+        lng < -180
+      ) {
+
+        return res.status(400).json({
+          message:
+            "Longitude must be between -180 and 180",
+        });
+      }
+
+      // ====================================
+      // AUTO FIX USA LONGITUDE
+      // ====================================
+
+      // USA longitude should be negative
+      if (
+        lng > 0 &&
+        lat > 20
+      ) {
+
+        lng = -Math.abs(lng);
+      }
+
+      // ====================================
+      // SAVE CLEAN LOCATION
+      // ====================================
+
       listing.location = {
         lat: Number(lat),
         lng: Number(lng),
@@ -193,34 +270,43 @@ export const updateLocation = async (req, res) => {
       });
     }
 
-    // =============================
+    // ====================================
     // CASE 2: ADDRESS PROVIDED
-    // =============================
-    if (address) {
-      const geoRes = await axios.get(
-        "https://maps.googleapis.com/maps/api/geocode/json",
-        {
-          params: {
-            address,
-            key: process.env.GOOGLE_MAPS_KEY,
-          },
-        },
-      );
+    // ====================================
 
-      const result = geoRes.data.results[0];
+    if (address) {
+
+      const geoRes =
+        await axios.get(
+          "https://maps.googleapis.com/maps/api/geocode/json",
+          {
+            params: {
+              address,
+              key:
+                process.env.GOOGLE_MAPS_KEY,
+            },
+          }
+        );
+
+      const result =
+        geoRes.data.results[0];
 
       if (!result) {
+
         return res.status(400).json({
-          message: "Invalid address",
+          message:
+            "Invalid address",
         });
       }
 
-      const location = result.geometry.location;
+      const location =
+        result.geometry.location;
 
       listing.location = {
-        lat: location.lat,
-        lng: location.lng,
-        address: result.formatted_address,
+        lat: Number(location.lat),
+        lng: Number(location.lng),
+        address:
+          result.formatted_address,
       };
 
       await listing.save();
@@ -231,14 +317,21 @@ export const updateLocation = async (req, res) => {
       });
     }
 
-    res.status(400).json({
-      message: "Provide lat/lng or address",
+    return res.status(400).json({
+      message:
+        "Provide lat/lng or address",
     });
+
   } catch (error) {
-    // console.error("LOCATION ERROR:", error.message);
+
+    console.log(
+      "LOCATION ERROR:",
+      error.message
+    );
 
     res.status(500).json({
-      message: "Location update failed",
+      message:
+        "Location update failed",
     });
   }
 };
