@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdClose } from "react-icons/io";
-import emailjs from "emailjs-com";
+import emailjs from "@emailjs/browser";
 
 export default function InquiryModal({ propertyId, onClose }) {
   const [form, setForm] = useState({

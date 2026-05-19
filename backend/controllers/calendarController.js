@@ -285,7 +285,7 @@ export const cleanDuplicateCalendar = async (req, res) => {
     const map = new Map();
 
     for (const item of listing.calendar) {
-      const key = toDateKey(item.date);
+      const key = dateOnly(item.date);
 
       if (!map.has(key)) {
         map.set(key, item);
@@ -390,73 +390,108 @@ export const importICal = async (req, res) => {
 
     const bookingDates = [];
 
-    // =====================================
-    // LOOP EVENTS
-    // =====================================
+   
 
-    // 🔥 parse all bookings
-    for (const key in events) {
-      const event = events[key];
+   // 🔥 parse all bookings
+// =====================================
+// LOOP EVENTS
+// =====================================
 
-      if (event.type !== "VEVENT") continue;
+for (const key in events) {
 
-      if (!event.start || !event.end) continue;
+  const event = events[key];
 
-      // ✅ FORCE LOCAL SAFE DATES
-      const start = new Date(
-        event.start.getFullYear(),
-        event.start.getMonth(),
-        event.start.getDate(),
-        12,
-        0,
-        0,
-        0,
+  if (event.type !== "VEVENT") continue;
+
+  if (!event.start || !event.end) continue;
+
+  // =====================================
+  // SAFE DATES
+  // =====================================
+
+  const start = new Date(
+    event.start.getFullYear(),
+    event.start.getMonth(),
+    event.start.getDate(),
+    12, 0, 0, 0
+  );
+
+  const end = new Date(
+    event.end.getFullYear(),
+    event.end.getMonth(),
+    event.end.getDate(),
+    12, 0, 0, 0
+  );
+
+  // TOTAL NIGHTS
+  const totalNights = Math.round(
+    (end - start) /
+    (1000 * 60 * 60 * 24)
+  );
+
+  if (totalNights <= 0) continue;
+
+  // =====================================
+  // SINGLE NIGHT
+  // =====================================
+
+  if (totalNights === 1) {
+
+    bookingDates.push({
+      date: new Date(start),
+      status: "CIN",
+      source: "ical",
+    });
+
+    bookingDates.push({
+      date: new Date(end),
+      status: "COUT",
+      source: "ical",
+    });
+
+  }
+
+  // =====================================
+  // MULTI NIGHT
+  // =====================================
+
+  else {
+
+    // CHECK-IN
+    bookingDates.push({
+      date: new Date(start),
+      status: "CIN",
+      source: "ical",
+    });
+
+    // BOOKED NIGHTS
+    for (let i = 1; i < totalNights; i++) {
+
+      const booked = new Date(start);
+
+      booked.setDate(
+        start.getDate() + i
       );
 
-      const end = new Date(
-        event.end.getFullYear(),
-        event.end.getMonth(),
-        event.end.getDate(),
-        12,
-        0,
-        0,
-        0,
+      booked.setHours(
+        12, 0, 0, 0
       );
 
-      let current = new Date(start);
-
-      while (current < end) {
-        const currentDate = new Date(
-          current.getFullYear(),
-          current.getMonth(),
-          current.getDate(),
-          12,
-          0,
-          0,
-          0,
-        );
-
-        const prevDay = new Date(current);
-        prevDay.setDate(prevDay.getDate() - 1);
-
-        const nextDay = new Date(current);
-        nextDay.setDate(nextDay.getDate() + 1);
-
-        const isCheckin = current.getTime() === start.getTime();
-
-        const isCheckout = nextDay.getTime() === end.getTime();
-
-        bookingDates.push({
-          date: currentDate,
-
-          status: isCheckin ? "CIN" : isCheckout ? "COUT" : "R",
-
-          source: "ical",
-        });
-
-        current.setDate(current.getDate() + 1);
-      }
+      bookingDates.push({
+        date: booked,
+        status: "R",
+        source: "ical",
+      });
     }
+
+    // REAL CHECKOUT DAY
+    bookingDates.push({
+      date: new Date(end),
+      status: "COUT",
+      source: "ical",
+    });
+  }
+}
 
     // =====================================
     // MERGE DATES
@@ -485,11 +520,19 @@ export const importICal = async (req, res) => {
         map.set(key, []);
       }
 
-      map.get(key).push({
-        date: d.date,
-        status: d.status,
-        source: d.source,
-      });
+      const existing = map.get(key) || [];
+
+const filtered = existing.filter(
+  (x) => x.source !== "ical"
+);
+
+filtered.push({
+  date: d.date,
+  status: d.status,
+  source: d.source,
+});
+
+map.set(key, filtered);
     });
 
     // =====================================

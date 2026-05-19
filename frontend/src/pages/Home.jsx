@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios.js";
 import FeaturedActivities from "../components/homeSection/FeaturedActivities";
 import DiscoverDestinSection from "../components/homeSection/DiscoverDestin";
@@ -174,8 +174,23 @@ const HeroSection = ({listingId}) => {
     {(listings || []).slice(0, 4).map((listing) => (
       <PropertyCard key={listing._id} listing={listing} />
     ))}
+    
   </div>
+  <div className="flex justify-center mt-14 ">
+    <Link to={"/properties"}>
+     <button
+      onClick={() => setOpen(true)}
+      className="px-8 py-3 rounded-full  text-black font-medium shadow-md bg-[#F8F812]  hover:bg-[#1B252F] hover:text-white hover:scale-105  transition duration-300"
+    >
+      View More  →
+    </button>
+    </Link>
+   
+  </div>
+        
+  
 </div>
+ 
 
 
       <FeaturedActivities />

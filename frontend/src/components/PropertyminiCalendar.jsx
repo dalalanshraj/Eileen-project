@@ -43,61 +43,83 @@ export default function PropertyminiCalendar({ listingId }) {
   };
 
   // DAY CLASS
-  const getDateType = (date) => {
+ const getDateType = (date) => {
 
-    const current = normalizeDate(date);
+  // TODAY
+  const today = new Date();
 
-    const found = calendarDates.find(
-      (d) => normalizeDate(d.date) === current
-    );
+  today.setHours(0, 0, 0, 0);
 
-    // AVAILABLE
-    if (!found) {
-      return "available-day";
-    }
+  const currentDate = new Date(date);
 
-    // NEXT DAY
-    const nextDay = new Date(date);
+  currentDate.setHours(0, 0, 0, 0);
 
-    nextDay.setDate(nextDay.getDate() + 1);
+  // ✅ PAST DATE
+  if (currentDate < today) {
+    return "past-day";
+  }
 
-    const next = calendarDates.find(
+  const current =
+    normalizeDate(date);
+
+  const sameDayItems =
+    calendarDates.filter(
       (d) =>
-        normalizeDate(d.date) ===
-        normalizeDate(nextDay)
+        normalizeDate(d.date) === current
     );
 
-    // TURNOVER
-    if (
-      found.status === "COUT" &&
-      next &&
-      next.status === "CIN"
-    ) {
-      return "turnover-day";
-    }
-
-    // CHECK-IN
-    if (found.status === "CIN") {
-      return "checkin-day";
-    }
-
-    // CHECK-OUT
-    if (found.status === "COUT") {
-      return "checkout-day";
-    }
-
-    // BOOKED
-    if (found.status === "R") {
-      return "blocked-day";
-    }
-
-    // HOLD
-    if (found.status === "H") {
-      return "hold-day";
-    }
-
+  // AVAILABLE
+  if (sameDayItems.length === 0) {
     return "available-day";
-  };
+  }
+
+  const hasCIN =
+    sameDayItems.some(
+      (d) => d.status === "CIN"
+    );
+
+  const hasCOUT =
+    sameDayItems.some(
+      (d) => d.status === "COUT"
+    );
+
+  const hasR =
+    sameDayItems.some(
+      (d) => d.status === "R"
+    );
+
+  const hasH =
+    sameDayItems.some(
+      (d) => d.status === "H"
+    );
+
+  // TURNOVER
+  if (hasCIN && hasCOUT) {
+    return "turnover-day";
+  }
+
+  // CHECK-IN
+  if (hasCIN) {
+    return "checkin-day";
+  }
+
+  // CHECK-OUT
+  if (hasCOUT) {
+    return "checkout-day";
+  }
+
+  // BOOKED
+  if (hasR) {
+    return "blocked-day";
+  }
+
+  // HOLD
+  if (hasH) {
+    return "hold-day";
+  }
+
+  return "available-day";
+};
 
   return (
     <div className="w-full">
@@ -120,9 +142,13 @@ export default function PropertyminiCalendar({ listingId }) {
 
     const today = new Date();
 
-    today.setHours(0, 0, 0, 0);
+today.setHours(0, 0, 0, 0);
 
-    return date >= today;
+const current = new Date(date);
+
+current.setHours(0, 0, 0, 0);
+
+return current >= today;
   }}
 />
 
@@ -236,8 +262,8 @@ export default function PropertyminiCalendar({ listingId }) {
 .react-datepicker__day.checkin-day {
   background: linear-gradient(
     135deg,
-    #5C5CFF 50%,
-    #d1fae5 50%
+    #d1fae5 50%,
+    #5C5CFF 50%
   ) !important;
 
   color: black !important;
@@ -247,8 +273,8 @@ export default function PropertyminiCalendar({ listingId }) {
 .react-datepicker__day.checkout-day {
   background: linear-gradient(
     315deg,
-    #5C5CFF 50%,
-    #d1fae5 50%
+    #d1fae5 50%,
+    #5C5CFF 50%
   ) !important;
 
   color: black !important;
@@ -304,12 +330,16 @@ export default function PropertyminiCalendar({ listingId }) {
   pointer-events: none;
 }
 
-/* DISABLE PAST DAYS */
-.react-datepicker__day--disabled {
-  // opacity: 0.1;
-  cursor: not-allowed;
-}
+.react-datepicker__day.past-day {
 
+  background: #d1fae5 !important;
+
+  color: #94a3b8 !important;
+
+  opacity: 0.7 !important;
+
+  cursor: not-allowed !important;
+}
       `}</style>
     </div>
   );
