@@ -107,7 +107,7 @@ const Navbar = () => {
               href="tel:4042756533"
               className="text-1xl font-bold text-white hover:text-gray-200 transition"
             >
-              404-275-6533
+              +1 (404) 275-6533
             </a>
           </div>
         </div>

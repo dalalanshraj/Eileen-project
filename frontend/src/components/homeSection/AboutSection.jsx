@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { motion } from "framer-motion";
+import { FaPhoneAlt } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
+import { IoLocation } from "react-icons/io5";
 
 export default function AboutSection({ listingId }) {
   const [listing, setListing] = useState(null);
@@ -124,6 +127,47 @@ export default function AboutSection({ listingId }) {
             DONNA DANIEL <br className="hidden sm:block" />
             REALTY INC
           </h1>
+          <p className="text-white">A Licensed Real Estate Broker in Florida</p>
+          <div className="mt-5 space-y-3">
+  {/* PHONE */}
+  <div className="flex items-center justify-center lg:justify-start gap-3">
+    <div className="bg-[#4aa3c7] p-2 rounded-full">
+      <FaPhoneAlt className="text-white text-sm" />
+    </div>
+
+    <a
+      href="tel:+1234567890"
+      className="text-white text-sm sm:text-base hover:text-yellow-300 transition"
+    >
+      +1 (404) 275-6533 
+    </a>
+  </div>
+
+  {/* EMAIL */}
+  <div className="flex items-center justify-center lg:justify-start gap-3">
+    <div className="bg-[#4aa3c7] p-2 rounded-full">
+      <MdEmail className="text-white text-sm" />
+    </div>
+
+    <a
+      href="mailto:info@donnadanielrealty.com"
+      className="text-white text-sm sm:text-base hover:text-yellow-300 transition"
+    >
+      info@donnadanielrealty.com
+    </a>
+  </div>
+
+  {/* ADDRESS */}
+  <div className="flex items-start justify-center lg:justify-start gap-3">
+    <div className="bg-[#4aa3c7] p-2 rounded-full mt-1">
+      <IoLocation className="text-white text-sm" />
+    </div>
+
+    <p className="text-white text-sm sm:text-base leading-relaxed">
+      Florida, United States
+    </p>
+  </div>
+</div>
 
           <div className="space-y-4 sm:space-y-5 mt-5 sm:mt-6">
             <p
