@@ -153,7 +153,7 @@ export default function AboutSection({ listingId }) {
       href="mailto:info@donnadanielrealty.com"
       className="text-white text-sm sm:text-base hover:text-yellow-300 transition"
     >
-      info@donnadanielrealty.com
+      donna.daniel@mindspring.com
     </a>
   </div>
 

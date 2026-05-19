@@ -76,29 +76,73 @@ export const updateProperty = async (req, res) => {
 
 export const getAllListings = async (req, res) => {
   try {
-    const listings = await Listing.find().lean(); // ✅ safe
 
-    const updatedListings = await Promise.all(
-      listings.map(async (listing) => {
-        // 🔔 Inquiry count
-        const inquiryCount = await Inquiry.countDocuments({
-          property: listing._id,
-        });
+    const listings = await Listing.find()
 
-        // ⭐ Review count (from listing.reviews array)
-        const reviewCount = listing.reviews?.length || 0;
+      .select(`
+        property
+        status
+        photos
+        reviews
+        createdAt
+      `)
 
-        return {
-          ...listing,
-          inquiryCount,
-          reviewCount,
-        };
-      }),
-    );
+      .lean();
+
+    // IDS
+    const listingIds =
+      listings.map((l) => l._id);
+
+    // SINGLE QUERY
+    const inquiryCounts =
+      await Inquiry.aggregate([
+        {
+          $match: {
+            property: {
+              $in: listingIds,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$property",
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+
+    // MAP
+    const inquiryMap = {};
+
+    inquiryCounts.forEach((item) => {
+      inquiryMap[item._id.toString()] =
+        item.count;
+    });
+
+    // FINAL
+    const updatedListings =
+      listings.map((listing) => ({
+        ...listing,
+
+        inquiryCount:
+          inquiryMap[
+            listing._id.toString()
+          ] || 0,
+
+        reviewCount:
+          listing.reviews?.length || 0,
+      }));
 
     res.json(updatedListings);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    res.status(500).json({
+      error: err.message,
+    });
+
   }
 };
 
