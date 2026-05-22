@@ -7,12 +7,24 @@ const Properties = () => {
   const [loading, setLoading] = useState(true);
    const [images, setImages] = useState([]);
   
-    const getImageUrl = (path) => {
-      if (!path || typeof path !== "string") return "";
-      const base = import.meta.env.VITE_API_URL || "";
-      if (path.startsWith("http")) return path;
-      return base.replace(/\/$/, "") + "/" + path.replace(/^\//, "");
-    };
+   const getImageUrl = (photo) => {
+  if (!photo?.url) {
+    return "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
+  }
+
+  const base =
+    import.meta.env.VITE_API_URL || "";
+
+  if (photo.url.startsWith("http")) {
+    return photo.url;
+  }
+
+  return (
+    base.replace(/\/$/, "") +
+    "/" +
+    photo.url.replace(/^\//, "")
+  );
+};
   
     useEffect(() => {
       api
@@ -25,17 +37,12 @@ const Properties = () => {
         .catch(console.log);
     }, []);
   
-    const image1 =
-      images[0] || "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
-  
-    const image2 =
-      images[1] || "https://images.unsplash.com/photo-1560185007-cde436f6a4d0";
-  
-      const image3 =
-      images[4] ;
-  
-  
-    const heroImage = images[2] || image1;
+  const heroImage =
+  listings?.[0]?.photos?.[0]
+    ? getImageUrl(
+        listings[0].photos[0]
+      )
+    : "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
 
   useEffect(() => {
     api

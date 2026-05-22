@@ -70,7 +70,16 @@ const PropertyCard = ({ listing }) => {
         {/* IMAGE */}
         <div className="overflow-hidden">
           <img
-            src={image}
+            src={
+  listing.photos?.[0]?.url
+    ? `${
+        import.meta.env.VITE_API_URL
+      }/${listing.photos[0].url.replace(
+        /^\//,
+        ""
+      )}`
+    : "/placeholder.png"
+}
             alt={listing?.property?.title || "Property"}
             className="
               w-full

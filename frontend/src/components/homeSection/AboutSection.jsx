@@ -9,17 +9,38 @@ export default function AboutSection({ listingId }) {
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const getImageUrl = (path) => {
-    if (!path || typeof path !== "string") return "";
+  const getImageUrl = (photo) => {
+  const base =
+    import.meta.env.VITE_API_URL || "";
 
-    const base = import.meta.env.VITE_API_URL || "";
-
-    if (path.startsWith("http")) return path;
+  // new object format
+  if (photo?.url) {
+    if (photo.url.startsWith("http")) {
+      return photo.url;
+    }
 
     return (
-      base.replace(/\/$/, "") + "/" + path.replace(/^\//, "")
+      base.replace(/\/$/, "") +
+      "/" +
+      photo.url.replace(/^\//, "")
     );
-  };
+  }
+
+  // old string fallback
+  if (typeof photo === "string") {
+    if (photo.startsWith("http")) {
+      return photo;
+    }
+
+    return (
+      base.replace(/\/$/, "") +
+      "/" +
+      photo.replace(/^\//, "")
+    );
+  }
+
+  return "https://via.placeholder.com/600x400";
+};
 
   // FETCH LISTING
   useEffect(() => {
@@ -55,9 +76,9 @@ export default function AboutSection({ listingId }) {
   }
 
   const image =
-    listing?.photos?.length > 0
-      ? getImageUrl(listing.photos[0])
-      : "https://via.placeholder.com/600x400";
+  listing?.photos?.length > 0
+    ? getImageUrl(listing.photos[0])
+    : "https://via.placeholder.com/600x400";
 
   return (
     <section
