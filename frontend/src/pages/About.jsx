@@ -5,37 +5,62 @@ import FeaturedActivities from "../components/homeSection/FeaturedActivities";
 
 export default function About() {
   const [images, setImages] = useState([]);
+  const [galleryImages, setGalleryImages] =
+  useState([]);
 
   const getImageUrl = (path) => {
-    if (!path || typeof path !== "string") return "";
-    const base = import.meta.env.VITE_API_URL || "";
-    if (path.startsWith("http")) return path;
-    return base.replace(/\/$/, "") + "/" + path.replace(/^\//, "");
-  };
+  if (!path) {
+    return "/placeholder.png";
+  }
 
-  useEffect(() => {
-    api
-      .get("/gallery/published")
-      .then((res) => {
-        const data = res.data || [];
-        const formatted = data.map((img) => getImageUrl(img.image));
-        setImages(formatted);
-      })
-      .catch(console.log);
-  }, []);
+  const base =
+    import.meta.env.VITE_API_URL || "";
 
-  const image1 =
-    images[0] || "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
+  if (path.startsWith("http")) {
+    return path;
+  }
 
-  const image2 =
-    images[1] || "https://images.unsplash.com/photo-1560185007-cde436f6a4d0";
+  return (
+    base.replace(/\/$/, "") +
+    "/" +
+    path.replace(/^\//, "")
+  );
+};
 
-    const image3 =
-    images[4] ;
+ useEffect(() => {
+  api
+    .get("/gallery/published")
+    .then((res) => {
+      setGalleryImages(res.data || []);
+    })
+    .catch(console.log)
+    .finally(() => setLoading(false));
+}, []);
+
+  const image =
+  galleryImages?.[0]?.image
+    ? getImageUrl(
+        galleryImages[0].image
+      )
+    : "https://via.placeholder.com/600x400";
 
 
-  const heroImage = images[2] || image1;
+  
+  const heroImage =
+  images[0] ||
+  "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
 
+const aboutSectionImage =
+  images[1] ||
+  "https://images.unsplash.com/photo-1560185007-cde436f6a4d0";
+
+const bannerImage =
+  images[2] ||
+  "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
+
+const whyChooseUsImage =
+  images[3] ||
+  "https://images.unsplash.com/photo-1560185007-cde436f6a4d0";
   return (
     <>
       {/* 🔥 HERO (FIXED IMAGE) */}
@@ -71,7 +96,7 @@ export default function About() {
         <div
           className="absolute inset-0 bg-fixed bg-cover bg-center"
           style={{
-            backgroundImage: `url(${image3})`,
+            backgroundImage: `url(${image})`,
           }}
         />
 
@@ -107,7 +132,7 @@ export default function About() {
           {/* IMAGE */}
           <div className="overflow-hidden rounded-2xl group">
             <img
-              src={image2}
+              src={image}
               className="w-full h-[250px] sm:h-[350px] md:h-[450px] object-cover transition duration-700 group-hover:scale-110"
               alt="Why Choose Us"
             />

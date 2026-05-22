@@ -84,20 +84,38 @@ export default function Reviews() {
   // ==============================
   // IMAGE URL
   // ==============================
-  const getImageUrl = (path) => {
+const getImageUrl = (photo) => {
+  const base =
+    import.meta.env.VITE_API_URL || "";
 
-    if (!path) return "";
-
-    if (path.startsWith("http")) return path;
-
-    const base = import.meta.env.VITE_API_URL || "";
+  // new object format
+  if (photo?.url) {
+    if (photo.url.startsWith("http")) {
+      return photo.url;
+    }
 
     return (
       base.replace(/\/$/, "") +
       "/" +
-      path.replace(/^\//, "")
+      photo.url.replace(/^\//, "")
     );
-  };
+  }
+
+  // old string fallback
+  if (typeof photo === "string") {
+    if (photo.startsWith("http")) {
+      return photo;
+    }
+
+    return (
+      base.replace(/\/$/, "") +
+      "/" +
+      photo.replace(/^\//, "")
+    );
+  }
+
+  return "/placeholder.png";
+};
 
   const heroImage =
     images[0] ||

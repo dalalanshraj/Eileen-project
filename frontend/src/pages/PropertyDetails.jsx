@@ -103,8 +103,7 @@ const PropertyDetail = () => {
 
   // ================= IMAGES =================
   const imageUrls =
-    listing.photos?.map((img) => `${import.meta.env.VITE_API_URL}${img}`) || [];
-
+  listing.photos || [];
   // ================= REVIEWS =================
   const publishedReviews =
     listing.reviews?.filter((r) => r.published === true) || [];
