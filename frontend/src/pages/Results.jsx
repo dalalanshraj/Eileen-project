@@ -60,7 +60,7 @@ const ResultsPage = () => {
         className="relative h-[40vh] bg-cover bg-center flex items-center justify-center text-white text-center"
         style={{
           backgroundImage:
-            "url(https://www.coastaldreamrentals.com/img/hero-bg-img.jpeg)",
+            "url(https://donnadanielrealty.com/gallery-uploads/1779470823258-32899616.webp)",
         }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
