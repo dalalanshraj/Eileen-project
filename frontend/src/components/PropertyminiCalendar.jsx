@@ -41,9 +41,28 @@ export default function PropertyminiCalendar({ listingId }) {
       d.getMonth()
     }-${d.getDate()}`;
   };
+     const formatLocalDate = (date) => {
+
+  const d = new Date(date);
+
+  if (isNaN(d)) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "America/Chicago",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }
+  ).format(d);
+
+};
 
   // DAY CLASS
- const getDateType = (date) => {
+const getDateType = (date) => {
 
   // TODAY
   const today = new Date();
@@ -54,25 +73,41 @@ export default function PropertyminiCalendar({ listingId }) {
 
   currentDate.setHours(0, 0, 0, 0);
 
-  // ✅ PAST DATE
+  // PAST
   if (currentDate < today) {
     return "past-day";
   }
 
+  // CURRENT DATE KEY
   const current =
-    normalizeDate(date);
+    normalizeDate(currentDate);
 
+  // SAME DAY ITEMS
   const sameDayItems =
     calendarDates.filter(
       (d) =>
         normalizeDate(d.date) === current
     );
 
-  // AVAILABLE
-  if (sameDayItems.length === 0) {
-    return "available-day";
-  }
+  // PREVIOUS DAY
+  const prevDate =
+    new Date(currentDate);
 
+  prevDate.setDate(
+    prevDate.getDate() - 1
+  );
+
+  const prev =
+    normalizeDate(prevDate);
+
+  // PREVIOUS ITEMS
+  const prevDayItems =
+    calendarDates.filter(
+      (d) =>
+        normalizeDate(d.date) === prev
+    );
+
+  // CURRENT STATUSES
   const hasCIN =
     sameDayItems.some(
       (d) => d.status === "CIN"
@@ -93,8 +128,25 @@ export default function PropertyminiCalendar({ listingId }) {
       (d) => d.status === "H"
     );
 
+  // PREVIOUS DAY STATUS
+  const prevHasBooking =
+    prevDayItems.some(
+      (d) =>
+        d.status === "R" ||
+        d.status === "COUT"
+    );
+
+  // =====================================
   // TURNOVER
-  if (hasCIN && hasCOUT) {
+  // =====================================
+
+  if (
+    hasCIN &&
+    (
+      hasCOUT ||
+      prevHasBooking
+    )
+  ) {
     return "turnover-day";
   }
 
@@ -280,33 +332,61 @@ return current >= today;
   color: black !important;
 }
 
-/* TURNOVER */
+  /* TURNOVER */
 .react-datepicker__day.turnover-day {
-  background-color: #5C5CFF !important;
-  color: white !important;
-  position: relative;
-  overflow: hidden;
+
+  position: relative !important;
+
+  isolation: isolate;
+
+  overflow: hidden !important;
+
+  color: black !important;
+
+  z-index: 10 !important;
 }
 
-/* DIAGONAL LINE */
-.react-datepicker__day.turnover-day::after {
+.react-datepicker__day.turnover-day::before {
+
   content: "";
 
   position: absolute;
 
-  width: 140%;
-  height: 2px;
+  inset: 0;
 
-  background: white;
+  border-radius: 8px;
+
+  background: linear-gradient(
+    to bottom right,
+    #5C5CFF 0%,
+    #5C5CFF 49%,
+    #5C5CFF 51%,
+    #5C5CFF 100%
+  );
+
+  z-index: -1;
+}
+
+.react-datepicker__day.turnover-day::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 180%;
+
+  height: 3px;
+
+  background: black;
 
   top: 50%;
-  left: -20%;
+
+  left: -40%;
 
   transform: rotate(-45deg);
 
-  z-index: 2;
+  z-index: 20;
 }
-
 /* HOVER */
 .react-datepicker__day:hover {
   opacity: 0.9;

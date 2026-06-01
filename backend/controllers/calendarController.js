@@ -512,28 +512,48 @@ for (const key in events) {
         map.get(key).push(c);
       });
 
-    // ADD ICAL DATES
-    bookingDates.forEach((d) => {
-      const key = dateOnly(d.date);
+  // ADD ICAL DATES
+bookingDates.forEach((d) => {
 
-      if (!map.has(key)) {
-        map.set(key, []);
-      }
+  const key = dateOnly(d.date);
 
-      const existing = map.get(key) || [];
+  // CREATE ARRAY
+  if (!map.has(key)) {
+    map.set(key, []);
+  }
 
-const filtered = existing.filter(
-  (x) => x.source !== "ical"
-);
+  const existing =
+    map.get(key) || [];
 
-filtered.push({
-  date: d.date,
-  status: d.status,
-  source: d.source,
-});
+  // =====================================
+  // PREVENT SAME STATUS DUPLICATE
+  // =====================================
 
-map.set(key, filtered);
+  const alreadyExists =
+    existing.some(
+      (x) =>
+        x.source === "ical" &&
+        x.status === d.status
+    );
+
+  // =====================================
+  // ALLOW:
+  // SAME DATE + DIFFERENT STATUS
+  // =====================================
+
+  if (!alreadyExists) {
+
+    existing.push({
+      date: d.date,
+      status: d.status,
+      source: d.source,
     });
+
+  }
+
+  map.set(key, existing);
+
+});
 
     // =====================================
     // FINAL CALENDAR

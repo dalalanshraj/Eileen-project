@@ -51,51 +51,29 @@ export default function CalendarTab({ listingId }) {
     );
   };
 
-  // =====================================
-  // BLOCKED
-  // =====================================
-
-  // const isBlocked = (date) => {
-  //   return blockedDates.some((r) => {
-  //     const s = new Date(
-  //       new Date(r.start).getFullYear(),
-
-  //       new Date(r.start).getMonth(),
-
-  //       new Date(r.start).getDate(),
-  //     );
-
-  //     const e = new Date(
-  //       new Date(r.end).getFullYear(),
-
-  //       new Date(r.end).getMonth(),
-
-  //       new Date(r.end).getDate(),
-  //     );
-
-  //     const current = new Date(
-  //       date.getFullYear(),
-
-  //       date.getMonth(),
-
-  //       date.getDate(),
-  //     );
-
-  //     return current >= s && current < e;
-  //   });
-  // };
-
+ 
   // =====================================
   // DAY TYPE
   // =====================================
-  const formatLocalDate = (date) => {
-    return new Intl.DateTimeFormat("en-CA", {
+   const formatLocalDate = (date) => {
+
+  const d = new Date(date);
+
+  if (isNaN(d)) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
       timeZone: "America/Chicago",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    }).format(new Date(date));
-  };
+    }
+  ).format(d);
+
+};
   const blockedMap = useMemo(() => {
 
   const map = {};
@@ -126,7 +104,7 @@ export default function CalendarTab({ listingId }) {
 
 }, [blockedDates]);
 
-  const getDateType = useCallback((date) => {
+const getDateType = (date) => {
 
   const today = new Date();
 
@@ -158,9 +136,43 @@ export default function CalendarTab({ listingId }) {
   const hasH =
     statuses.includes("H");
 
-  if (hasCIN && hasCOUT) {
+  // =====================================
+  // PREVIOUS DAY
+  // =====================================
+
+  const prevDate = new Date(currentDate);
+
+  prevDate.setDate(
+    prevDate.getDate() - 1
+  );
+
+  const prevKey =
+    formatLocalDate(prevDate);
+
+  const prevStatuses =
+    blockedMap[prevKey] || [];
+
+  const prevBooked =
+    prevStatuses.includes("R") ||
+    prevStatuses.includes("CIN");
+
+  // =====================================
+  // TURNOVER
+  // =====================================
+
+  if (
+    hasCIN &&
+    (
+      hasCOUT ||
+      prevBooked
+    )
+  ) {
     return "turnover-day";
   }
+
+  // =====================================
+  // NORMAL
+  // =====================================
 
   if (hasCIN) {
     return "checkin-day";
@@ -179,8 +191,7 @@ export default function CalendarTab({ listingId }) {
   }
 
   return "available-day";
-
-}, [blockedMap]);
+};
   // =====================================
   // MANUAL DATE SELECT
   // =====================================
@@ -501,7 +512,110 @@ export default function CalendarTab({ listingId }) {
   background: transparent !important;
 }.react-datepicker__month-container {
   padding: 40px;
-} .react-datepicker__week { display: flex; justify-content: space-between; } .react-datepicker__day, .react-datepicker__day-name { width: 36px; height: 36px; line-height: 36px; margin: 2px; border-radius: 8px; } /* AVAILABLE */ .react-datepicker__day.available-day { background: #d1fae5 !important; color: black !important; } //* AVAILABLE */ .react-datepicker__day.available-day { background: #d1fae5 !important; color: black !important; } /* BOOKED */ .react-datepicker__day.blocked-day { background: #5C5CFF !important; color: white !important; } /* HOLD */ .react-datepicker__day.hold-day { background: #facc15 !important; color: black !important; } /* CHECK-IN */ .react-datepicker__day.checkin-day { background: linear-gradient( 135deg, #d1fae5 50%, #5C5CFF 50% ) !important; color: black !important; } /* CHECK-OUT */ .react-datepicker__day.checkout-day { background: linear-gradient( 315deg, #d1fae5 50%, #5C5CFF 50% ) !important; color: black !important; } /* TURNOVER */ .react-datepicker__day.turnover-day { position: relative !important; background: linear-gradient( 135deg, #d1fae5 50%, #5C5CFF 50% ) !important; color: black !important; overflow: hidden; } /* SMALL CENTER DIAGONAL */ .react-datepicker__day.turnover-day::after { content: ""; position: absolute; width: 160%; height: 2px; background: black; top: 50%; left: -30%; transform: rotate(-45deg); z-index: 5; } .react-datepicker__day--outside-month { visibility: hidden !important; pointer-events: none !important; } .react-datepicker__day.past-day { background: #d1fae5 !important; color: #94a3b8 !important; opacity: 0.7 !important; cursor: not-allowed !important; } }</style>
+} .react-datepicker__week 
+ { display: flex; 
+  justify-content: space-between; 
+  } 
+  .react-datepicker__day, .react-datepicker__day-name { 
+  width: 36px; height: 36px; 
+  line-height: 36px; 
+  margin: 2px; 
+  border-radius: 8px; 
+  } 
+  /* AVAILABLE */ 
+  .react-datepicker__day.available-day {
+   background: #d1fae5 !important; 
+   color: black !important; 
+   } 
+   /* AVAILABLE */
+   .react-datepicker__day.available-day 
+   { 
+   background: #d1fae5 !important; 
+   color: black !important; 
+   } 
+   /* BOOKED */ 
+   .react-datepicker__day.blocked-day { 
+   background: #5C5CFF !important; 
+   color: white !important; 
+   }
+    /* HOLD */ 
+    .react-datepicker__day.hold-day { 
+    background: #facc15 !important; 
+    color: black !important; 
+    } 
+    /* CHECK-IN */ 
+    .react-datepicker__day.checkin-day { 
+    background: linear-gradient( 135deg, #d1fae5 50%, #5C5CFF 50% ) !important; 
+    color: black !important; 
+    } 
+    /* CHECK-OUT */ 
+    .react-datepicker__day.checkout-day { 
+    background: linear-gradient( 315deg, #d1fae5 50%, #5C5CFF 50% ) !important; 
+    color: black !important; 
+    } 
+    /* TURNOVER */
+.react-datepicker__day.turnover-day {
+
+  position: relative !important;
+
+  isolation: isolate;
+
+  overflow: hidden !important;
+
+  color: black !important;
+
+  z-index: 10 !important;
+}
+
+.react-datepicker__day.turnover-day::before {
+
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: 8px;
+
+  background: linear-gradient(
+    to bottom right,
+    #5C5CFF 0%,
+    #5C5CFF 49%,
+    #5C5CFF 51%,
+    #5C5CFF 100%
+  );
+
+  z-index: -1;
+}
+
+.react-datepicker__day.turnover-day::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 180%;
+
+  height: 3px;
+
+  background: black;
+
+  top: 50%;
+
+  left: -40%;
+
+  transform: rotate(-45deg);
+
+  z-index: 20;
+}
+
+     .react-datepicker__day--outside-month { 
+     visibility: hidden !important; 
+     pointer-events: none !important; 
+     } 
+     .react-datepicker__day.past-day 
+     { background: #d1fae5 !important; 
+      color: #94a3b8 !important; opacity: 0.7 !important; cursor: not-allowed !important; } }</style>
 
     `}</style>
     </div>

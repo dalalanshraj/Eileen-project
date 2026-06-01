@@ -6,10 +6,10 @@ import DiscoverDestinSection from "../components/homeSection/DiscoverDestin";
 import DatePicker from "react-datepicker";
 import PropertyCard from "../components/PropertyCard";
 import AboutSection from "../components/homeSection/AboutSection.jsx";
-import heroVideo from "../assets/video.mp4"
+import heroVideo from "../assets/video.mp4";
 import GallerySection from "../components/gallarySection.jsx";
 
-const HeroSection = ({listingId}) => {
+const HeroSection = ({ listingId }) => {
   const [formData, setFormData] = useState({
     checkIn: "",
     checkOut: "",
@@ -20,9 +20,6 @@ const HeroSection = ({listingId}) => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
-
- 
-  
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -49,7 +46,8 @@ const HeroSection = ({listingId}) => {
   }, [showModal]);
 
   useEffect(() => {
-    api.get("/listings/published")
+    api
+      .get("/listings/published")
       .then((res) => {
         setListings(res.data.listings || res.data);
       })
@@ -57,28 +55,26 @@ const HeroSection = ({listingId}) => {
   }, []);
 
   const formatDate = (date) => {
-  if (!date) return "";
+    if (!date) return "";
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
-};
+    return `${year}-${month}-${day}`;
+  };
 
+  const parseLocalDate = (dateString) => {
+    if (!dateString) return null;
 
-const parseLocalDate = (dateString) => {
-  if (!dateString) return null;
+    const [year, month, day] = dateString.split("-");
 
-  const [year, month, day] = dateString.split("-");
-
-  return new Date(year, month - 1, day);
-};
+    return new Date(year, month - 1, day);
+  };
   return (
     <>
       {/* HERO */}
       <section className="relative min-h-[70vh] md:min-h-[100vh] flex items-center justify-center text-center overflow-hidden">
-        
         {/* VIDEO */}
         <video
           autoPlay
@@ -87,10 +83,7 @@ const parseLocalDate = (dateString) => {
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source
-            src={heroVideo}
-            type="video/mp4"
-          />
+          <source src={heroVideo} type="video/mp4" />
         </video>
 
         {/* OVERLAY */}
@@ -98,15 +91,14 @@ const parseLocalDate = (dateString) => {
 
         {/* CONTENT */}
         <div className="relative z-10 text-white px-4 w-full max-w-6xl">
-          
           {/* HEADING */}
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-semibold mb-4 leading-tight">
-            Destin, FL Vacation Rental
-            </h1>
+         <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-semibold mb-4 leading-tight">
+  Experience the Beauty of 30A
+</h1>
 
-          <p className="text-sm sm:text-base md:text-lg mb-6 md:mb-10">
-            Rental Property Management and Vacation Rentals in Okaloosa and Walton County
-          </p>
+<p className="text-sm sm:text-base md:text-lg mb-6 md:mb-10">
+  Stay at Beach Therapy 30A and enjoy pristine beaches, scenic trails, and the charm of Grayton Beach.
+</p>
 
           {/* FORM */}
           <form
@@ -114,37 +106,34 @@ const parseLocalDate = (dateString) => {
             className="bg-white text-black rounded-xl shadow-xl p-4 md:p-5  w-[95%] max-w-3xl mx-auto
             flex flex-col md:flex-row gap-3 md:gap-10 items-stretch md:items-center"
           >
-            
-          <DatePicker
-  selected={parseLocalDate(formData.checkIn)}
-  onChange={(date) =>
-    setFormData((prev) => ({
-      ...prev,
-      checkIn: formatDate(date),
-    }))
-  }
-  placeholderText="Check In"
-  className="w-full border rounded-lg px-3 py-2"
-  minDate={new Date()}
-/>
+            <DatePicker
+              selected={parseLocalDate(formData.checkIn)}
+              onChange={(date) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  checkIn: formatDate(date),
+                }))
+              }
+              placeholderText="Check In"
+              className="w-full border rounded-lg px-3 py-2"
+              minDate={new Date()}
+            />
 
-{/* CHECK OUT */}
-<DatePicker
-  selected={parseLocalDate(formData.checkOut)}
-  onChange={(date) =>
-    setFormData((prev) => ({
-      ...prev,
-      checkOut: formatDate(date),
-    }))
-  }
-  placeholderText="Check Out"
-  className="w-full border rounded-lg px-3 py-2"
-  minDate={
-    formData.checkIn
-      ? parseLocalDate(formData.checkIn)
-      : new Date()
-  }
-/>
+            {/* CHECK OUT */}
+            <DatePicker
+              selected={parseLocalDate(formData.checkOut)}
+              onChange={(date) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  checkOut: formatDate(date),
+                }))
+              }
+              placeholderText="Check Out"
+              className="w-full border rounded-lg px-3 py-2"
+              minDate={
+                formData.checkIn ? parseLocalDate(formData.checkIn) : new Date()
+              }
+            />
 
             {/* GUESTS */}
             <select
@@ -174,52 +163,45 @@ const parseLocalDate = (dateString) => {
         </div>
       </section>
       <div className="py-16 bg-white">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-sky-900 text-center leading-tight">
+          Available Vacation Rentals
+        </h2>
 
-  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-sky-900 text-center leading-tight">
-    Available Vacation Rentals
-  </h2>
+        <p className="text-center text-gray-500 max-w-2xl mx-auto mb-12">
+          Experience the serene allure of the coast while enjoying the comfort
+          and luxury our homes provide.
+        </p>
 
-  <p className="text-center text-gray-500 max-w-2xl mx-auto mb-12">
-    Experience the serene allure of the coast while enjoying the comfort and luxury our homes provide.
-  </p>
-
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-10">
-    {(listings || []).slice(0, 4).map((listing) => (
-      <PropertyCard key={listing._id} listing={listing} />
-    ))}
-    
-  </div>
-  <div className="flex justify-center mt-14 ">
-    <Link to={"/properties"}>
-     <button
-      onClick={() => setOpen(true)}
-      className="px-8 py-3 rounded-full  text-black font-medium shadow-md bg-[#F8F812]  hover:bg-[#1B252F] hover:text-white hover:scale-105  transition duration-300"
-    >
-      View More  →
-    </button>
-    </Link>
-   
-  </div>
-        
-  
-</div>
- 
-
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-10">
+          {(listings || []).slice(0, 4).map((listing) => (
+            <PropertyCard key={listing._id} listing={listing} />
+          ))}
+        </div>
+        <div className="flex justify-center mt-14 ">
+          <Link to={"/properties"}>
+            <button
+              onClick={() => setOpen(true)}
+              className="px-8 py-3 rounded-full  text-black font-medium shadow-md bg-[#F8F812]  hover:bg-[#1B252F] hover:text-white hover:scale-105  transition duration-300"
+            >
+              View More →
+            </button>
+          </Link>
+        </div>
+      </div>
 
       <FeaturedActivities />
-      <AboutSection listingId="69fa0b19d8b673e7d4bf1637" />
+      <AboutSection listingId="6a1606de8ee2fa44c5186e4b" />
       {/* <DiscoverDestinSection /> */}
       <GallerySection />
 
       {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center 
-        bg-black/30 backdrop-blur-sm z-50">
-
+        <div
+          className="fixed inset-0 flex items-center justify-center 
+        bg-black/30 backdrop-blur-sm z-50"
+        >
           <div className="bg-white p-6 rounded-xl shadow-xl w-[90%] max-w-sm text-center">
-            <h2 className="text-lg font-semibold text-red-600 mb-2">
-              Notice
-            </h2>
+            <h2 className="text-lg font-semibold text-red-600 mb-2">Notice</h2>
 
             <p className="text-gray-700 mb-4">{error}</p>
 

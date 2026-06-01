@@ -135,23 +135,27 @@ export default function AboutSection({ listingId }) {
           </p>
 
           <h1
-            className="
-              text-3xl
-              sm:text-4xl
-              md:text-5xl
-              lg:text-6xl
-              font-extrabold
-              text-white
-              leading-tight
-            "
-          >
-            DONNA DANIEL <br className="hidden sm:block" />
-            REALTY INC
-          </h1>
-          <p className="text-white">A Licensed Real Estate Broker in Florida</p>
+  className="
+    text-3xl
+    sm:text-4xl
+    md:text-5xl
+    lg:text-6xl
+    font-extrabold
+    text-white
+    leading-tight
+  "
+>
+  Shawn & Eileen <br className="hidden sm:block" />
+  O'Sullivan
+</h1>
+
+<p className="text-white">
+  Owners of Beach Therapy 30A
+</p>
+          {/* <p className="text-white">A Licensed Real Estate Broker in Florida</p> */}
           <div className="mt-5 space-y-3">
   {/* PHONE */}
-  <div className="flex items-center justify-center lg:justify-start gap-3">
+  {/* <div className="flex items-center justify-center lg:justify-start gap-3">
     <div className="bg-[#4aa3c7] p-2 rounded-full">
       <FaPhoneAlt className="text-white text-sm" />
     </div>
@@ -162,10 +166,10 @@ export default function AboutSection({ listingId }) {
     >
       +1 (404) 275-6533 
     </a>
-  </div>
+  </div> */}
 
   {/* EMAIL */}
-  <div className="flex items-center justify-center lg:justify-start gap-3">
+  {/* <div className="flex items-center justify-center lg:justify-start gap-3">
     <div className="bg-[#4aa3c7] p-2 rounded-full">
       <MdEmail className="text-white text-sm" />
     </div>
@@ -176,10 +180,10 @@ export default function AboutSection({ listingId }) {
     >
       donna.daniel@mindspring.com
     </a>
-  </div>
+  </div> */}
 
   {/* ADDRESS */}
-  <div className="flex items-start justify-center lg:justify-start gap-3">
+  {/* <div className="flex items-start justify-center lg:justify-start gap-3">
     <div className="bg-[#4aa3c7] p-2 rounded-full mt-1">
       <IoLocation className="text-white text-sm" />
     </div>
@@ -188,54 +192,59 @@ export default function AboutSection({ listingId }) {
       4321 Carriage Ln
 Destin, FL 32541,
     </p>
-  </div>
+  </div> */}
 </div>
 
-          <div className="space-y-4 sm:space-y-5 mt-5 sm:mt-6">
-            <p
-              className="
-                text-white/90
-                text-sm
-                sm:text-base
-                md:text-lg
-                leading-relaxed
-              "
-            >
-              Donna Daniel Realty Inc is your trusted partner in
-              finding the perfect home and investment opportunities.
-              We specialize in premium properties, offering expert
-              guidance for buying, selling, and renting real estate.
-            </p>
+         <div className="space-y-4 sm:space-y-5 mt-5 sm:mt-6">
+  <p
+    className="
+      text-white/90
+      text-sm
+      sm:text-base
+      md:text-lg
+      leading-relaxed
+    "
+  >
+    Welcome! We are Shawn and Eileen O’Sullivan and we are the owners of
+    Beach Therapy 30A, located in Grayton Beach, FL. Originally, we are
+    from Long Island, NY where we spent the beginning of our lives.
+  </p>
 
-            <p
-              className="
-                text-white/90
-                text-sm
-                sm:text-base
-                md:text-lg
-                leading-relaxed
-              "
-            >
-              From luxury homes to modern apartments, our team
-              ensures a smooth and transparent process. We focus
-              on delivering value, comfort, and long-term
-              satisfaction to every client.
-            </p>
+  <p
+    className="
+      text-white/90
+      text-sm
+      sm:text-base
+      md:text-lg
+      leading-relaxed
+    "
+  >
+    We are high school sweethearts. Shawn went on to become a police
+    officer and paramedic for almost 30 years, while Eileen worked as an
+    emergency room nurse before becoming a stay-at-home mother. We also
+    have two amazing children, Kelly and Christopher. Kelly is a doctor
+    and Christopher is a math teacher. Our daughter is married to Joe,
+    and we have two grandchildren with a third on the way.
+  </p>
 
-            <p
-              className="
-                text-white/90
-                text-sm
-                sm:text-base
-                md:text-lg
-                leading-relaxed
-              "
-            >
-              Whether you're searching for your dream home or a
-              profitable investment, we are here to guide you
-              every step of the way.
-            </p>
-          </div>
+  <p
+    className="
+      text-white/90
+      text-sm
+      sm:text-base
+      md:text-lg
+      leading-relaxed
+    "
+  >
+    We spent many years deciding where to build our retirement home, and
+    we truly found a gem in the 30A community. Some of Eileen’s favorite
+    hobbies include going to the beach and relaxing in the sun. Beach
+    Therapy 30A is within walking distance of the beach!
+  </p>
+
+  
+ 
+</div>
         </motion.div>
 
         {/* RIGHT IMAGE */}
@@ -272,7 +281,7 @@ Destin, FL 32541,
             />
 
             {/* FLOATING CARD */}
-            <div
+            {/* <div
               className="
                 absolute
                 -bottom-5
@@ -298,7 +307,7 @@ Destin, FL 32541,
                 Helping families find perfect vacation homes &
                 investments.
               </p>
-            </div>
+            </div> */}
           </div>
         </motion.div>
       </div>

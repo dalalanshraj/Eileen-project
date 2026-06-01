@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 const sendEmail = async (to, subject, html) => {
   const info = await transporter.sendMail({
-    from: `"Donna Daniel Rentals" <${process.env.EMAIL_USER}>`,
+    from: `"Beach Therapy 30a" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,

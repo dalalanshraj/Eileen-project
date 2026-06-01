@@ -14,7 +14,7 @@ const Footer = () => {
             <img
               src={logoIme}
               alt="Logo"
-              className="w-89"
+              className="w-49"
             />
            
           </Link>

@@ -398,56 +398,94 @@ export const updateActivities = async (req, res) => {
     res.status(500).json({ error: "Failed to update activities" });
   }
 };
-export const updatePhotos = async (req, res) => {
+export const updatePhotos = async (
+  req,
+  res
+) => {
+
   try {
-    const listing = await Listing.findById(req.params.id);
+
+    const listing =
+      await Listing.findById(
+        req.params.id
+      );
 
     if (!listing) {
+
       return res.status(404).json({
         message: "Listing not found",
       });
+
     }
 
     const uploadedPhotos = [];
 
     for (const file of req.files) {
+
       const filename =
         Date.now() +
         "-" +
-        Math.round(Math.random() * 1e9) +
+        Math.round(
+          Math.random() * 1e9
+        ) +
         ".webp";
 
-      const outputPath = `gallery-uploads/${filename}`;
+      const outputPath =
+        `uploads/${filename}`;
 
-      await sharp(file.buffer)
+      // ✅ COMPRESS
+      await sharp(file.path)
+
         .resize({
           width: 1600,
           withoutEnlargement: true,
         })
-        .webp({ quality: 75 })
+
+        .webp({
+          quality: 70,
+        })
+
         .toFile(outputPath);
 
+      // ✅ DELETE TEMP FILE
+      fs.unlinkSync(file.path);
+
       uploadedPhotos.push({
-        url: `/gallery-uploads/${filename}`,
-        order: listing.photos.length,
+
+        url: `/uploads/${filename}`,
+
+        order:
+          listing.photos.length +
+          uploadedPhotos.length,
+
       });
+
     }
 
-    listing.photos.push(...uploadedPhotos);
+    listing.photos.push(
+      ...uploadedPhotos
+    );
 
     await listing.save();
 
     res.json({
+
       success: true,
+
       photos: listing.photos,
+
     });
+
   } catch (err) {
+
     console.log(err);
 
     res.status(500).json({
       message: err.message,
     });
+
   }
+
 };
 
 export const deletePhoto = async (req, res) => {

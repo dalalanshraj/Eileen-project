@@ -40,15 +40,40 @@ import { fileURLToPath } from "url";
 import { isAuth, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+const storage = multer.diskStorage({
+
+  destination: function (req, file, cb) {
+    cb(null, "temp/");
+  },
+
+  filename: function (req, file, cb) {
+
+    cb(
+      null,
+      Date.now() +
+        "-" +
+        file.originalname
+    );
+
+  },
+
+});
 
 const upload = multer({
-  storage: multer.memoryStorage(),
+
+  storage,
 
   limits: {
-    fileSize: 10 * 1024 * 1024,
+
+    fileSize: 20 * 1024 * 1024, // 20MB each
+
+    files: 60, // ✅ MAX 60 FILES
+
   },
+
 });
 
 
@@ -77,7 +102,7 @@ router.put("/:id/amenities", updateAmenities);
 router.put("/:id/activities", updateActivities);
 router.put(
   "/:id/photos",
-  upload.array("photos", 30),
+  upload.array("photos", 60),
   updatePhotos
 );
 router.delete("/:id/photos/:filename", deletePhoto);

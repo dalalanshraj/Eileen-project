@@ -30,12 +30,13 @@ import galleryRoutes from "./routes/galleryRoutes.js";
 import icalcalendarRoutes from "./routes/icalRoutes.js";
 
 const app = express();
-const PORT = process.env.PORT || 4002;
+const PORT = process.env.PORT || 4006;
 const allowedOrigins = [
-  "https://donnadanielrealty.com",
-  "https://www.donnadanielrealty.com",
+  "https://beachtherapy30a.com",
+  "https://www.beachtherapy30a.com",
   "http://localhost:5174",
   "http://localhost:5173",
+  "http://localhost:5175",
 ];
 
 app.use(
@@ -82,6 +83,10 @@ app.use("/api/gallery", galleryRoutes);
 app.use(
   "/gallery-uploads",
   express.static("gallery-uploads")
+);
+app.use(
+  "/uploads",
+  express.static("uploads")
 );
 
 app.use("/api", icalcalendarRoutes);

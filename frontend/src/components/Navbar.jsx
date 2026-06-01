@@ -51,11 +51,11 @@ const Navbar = () => {
     // ABOUT: [{ name: "ABOUT", }],
     COMMUNITIES: [
       {
-        name: "Crystal Sands",
+        name: "",
         link: "/community/crystal-sands",
       },
       {
-        name: "Mediterranea",
+        name: "",
         link: "/community/mediterranea",
       },
     ],
@@ -64,7 +64,7 @@ const Navbar = () => {
   const menuItems = [
     { name: "HOME", link: "/" },
     { name: "ABOUT", link: "/about-us" },
-    { name: "COMMUNITIES" },
+    // { name: "COMMUNITIES" },
     { name: "PROPERTIES", link: "/properties" },
     { name: "GALLERY", link: "/gallery" },
     { name: "REVIEWS", link: "/reviews" },
@@ -82,7 +82,7 @@ const Navbar = () => {
         <Link to="/">
           <img
             src={isScrolled ? logoScrolled : logoIme}
-            className="w-40 md:w-54 transition-all duration-300"
+            className="w-40 md:w-34 transition-all duration-300"
             alt="logo"
           />
         </Link>
@@ -107,7 +107,7 @@ const Navbar = () => {
               href="tel:4042756533"
               className="text-1xl font-bold text-white hover:text-gray-200 transition"
             >
-              +1 (404) 275-6533
+              +1 (631) 946-1189
             </a>
           </div>
         </div>
