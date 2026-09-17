@@ -1,5 +1,6 @@
 import express from "express";
 import Listing from "../models/Listing.js";
+import Deal from "../models/Deal.js";
 import {
   createListing,
   getAllListings,
@@ -28,7 +29,7 @@ import {
   toggleListingStatus,
   getPublishedListings,
   getAllReviews,
-
+getCommunityListings,
   
 
 } from "../controllers/listingController.js";
@@ -93,6 +94,8 @@ router.post("/", createListing);
 router.get("/", isAuth, isAdmin, getAllListings);
 router.get("/:id", getListingById); 
 router.delete("/:id", deleteListing);
+router.get("/:id", getListingById); 
+router.delete("/:id", deleteListing);
  
 
 // tab-wise save
@@ -138,8 +141,7 @@ router.put(
   isAdmin,
   toggleListingStatus
 );
-
-
+ 
 
 
 export default router;

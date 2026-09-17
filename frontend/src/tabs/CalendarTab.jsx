@@ -2,19 +2,30 @@ import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import api from "../api/axios";
-import {
-  useMemo,
-  useCallback,
-} from "react";
+import { useMemo, useCallback } from "react";
+// import { toast } from "react-toastify";
 
 export default function CalendarTab({ listingId }) {
   const [blockedDates, setBlockedDates] = useState([]);
-
-  const [icalUrl, setIcalUrl] = useState("");
+  const [calendarSource, setCalendarSource] = useState("manual");
+  const [loading, setLoading] = useState(false);
+  const [icalSources, setIcalSources] = useState([
+    {
+      name: "",
+      url: "",
+    },
+  ]);
 
   const [startDate, setStartDate] = useState(null);
 
   const [endDate, setEndDate] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [guests, setGuests] = useState(1);
+  const [comment, setComment] = useState("");
+  const hasICal = icalSources.some((item) => item.url.trim() !== "");
 
   // =====================================
   // FETCH DATES
@@ -26,17 +37,52 @@ export default function CalendarTab({ listingId }) {
     }
   }, [listingId]);
 
-  const fetchDates = () => {
-    api
-      .get(`/calendar/${listingId}/calendar`)
+  const fetchDates = async () => {
+    try {
+      const res = await api.get(`/calendar/${listingId}/calendar`);
 
-      .then((res) => {
-        setBlockedDates(res.data.calendar || []);
+      setBlockedDates(res.data.calendar || []);
 
-        setIcalUrl(res.data.icalUrl || "");
-      })
+     const defaults = [
+  { name: "Airbnb", url: "" },
+  { name: "VRBO", url: "" },
+  { name: "Florida Rentals", url: "" },
+  { name: "OwnerRez", url: "" },
+];
 
-      .catch(console.log);
+const saved = res.data.icalSources || [];
+
+const merged = defaults.map((item) => {
+  const found = saved.find((s) => s.name === item.name);
+  return found || item;
+});
+
+setIcalSources(merged);
+
+      // ❌ Ye remove kar do
+      // else {
+      //   setCalendarSource("manual");
+      // }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const saveICalSources = async () => {
+    const validSources = icalSources.filter((item) => item.url.trim() !== "");
+
+ 
+
+    await api.put(`/calendar/${listingId}/calendar/ical-sources`, {
+      icalSources: validSources,
+    });
+  };
+  const updateSource = (index, value) => {
+    const copy = [...icalSources];
+
+    copy[index].url = value;
+
+    setIcalSources(copy);
   };
 
   // =====================================
@@ -51,144 +97,105 @@ export default function CalendarTab({ listingId }) {
     );
   };
 
- 
   // =====================================
   // DAY TYPE
   // =====================================
-   const formatLocalDate = (date) => {
+  const TIMEZONE = "America/Chicago";
 
-  const d = new Date(date);
+  const formatLocalDate = (date) => {
+  if (!date) return "";
 
-  if (isNaN(d)) {
-    return "";
+  if (typeof date === "string") {
+    return date.substring(0, 10);
   }
 
-  return new Intl.DateTimeFormat(
-    "en-CA",
-    {
-      timeZone: "America/Chicago",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }
-  ).format(d);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
 
+  return `${y}-${m}-${d}`;
 };
   const blockedMap = useMemo(() => {
+    const map = {};
 
-  const map = {};
+    blockedDates.forEach((item) => {
+      const key = formatLocalDate(item.date);
 
-  blockedDates.forEach((item) => {
+      if (!map[key]) {
+        map[key] = [];
+      }
 
-    const itemDate = new Date(
-      new Date(item.date).toLocaleString(
-        "en-US",
-        {
-          timeZone:
-            "America/Chicago",
-        }
-      )
-    );
+      map[key].push(item.status);
+    });
 
-    const key =
-      formatLocalDate(itemDate);
-
-    if (!map[key]) {
-      map[key] = [];
-    }
-
-    map[key].push(item.status);
-  });
-
-  return map;
-
-}, [blockedDates]);
+    return map;
+  }, [blockedDates]);
+  
 
 const getDateType = (date) => {
-
   const today = new Date();
-
   today.setHours(0, 0, 0, 0);
 
-  const currentDate = new Date(date);
+  const current = new Date(date);
+  current.setHours(0, 0, 0, 0);
 
-  currentDate.setHours(0, 0, 0, 0);
+  const key = formatLocalDate(current);
 
-  if (currentDate < today) {
+  // Past
+  if (current < today) {
     return "past-day";
   }
 
-  const currentKey =
-    formatLocalDate(currentDate);
+  const statuses = [...new Set(blockedMap[key] || [])];
 
-  const statuses =
-    blockedMap[currentKey] || [];
+  const hasR = statuses.includes("R");
+  const hasH = statuses.includes("H");
+  const hasCIN = statuses.includes("CIN");
+  const hasCOUT = statuses.includes("COUT");
 
-  const hasCIN =
-    statuses.includes("CIN");
+  // ----------------------------------------------------
+  // TURNOVER (same day checkin + checkout)
+  // ----------------------------------------------------
 
-  const hasCOUT =
-    statuses.includes("COUT");
-
-  const hasR =
-    statuses.includes("R");
-
-  const hasH =
-    statuses.includes("H");
-
-  // =====================================
-  // PREVIOUS DAY
-  // =====================================
-
-  const prevDate = new Date(currentDate);
-
-  prevDate.setDate(
-    prevDate.getDate() - 1
-  );
-
-  const prevKey =
-    formatLocalDate(prevDate);
-
-  const prevStatuses =
-    blockedMap[prevKey] || [];
-
-  const prevBooked =
-    prevStatuses.includes("R") ||
-    prevStatuses.includes("CIN");
-
-  // =====================================
-  // TURNOVER
-  // =====================================
-
-  if (
-    hasCIN &&
-    (
-      hasCOUT ||
-      prevBooked
-    )
-  ) {
+  if (hasCIN && hasCOUT) {
     return "turnover-day";
   }
 
-  // =====================================
-  // NORMAL
-  // =====================================
+  // ----------------------------------------------------
+  // CHECK-IN
+  // ----------------------------------------------------
 
   if (hasCIN) {
     return "checkin-day";
   }
 
+  // ----------------------------------------------------
+  // CHECK-OUT
+  // ----------------------------------------------------
+
   if (hasCOUT) {
     return "checkout-day";
   }
+
+  // ----------------------------------------------------
+  // RESERVED
+  // ----------------------------------------------------
 
   if (hasR) {
     return "blocked-day";
   }
 
+  // ----------------------------------------------------
+  // HOLD
+  // ----------------------------------------------------
+
   if (hasH) {
     return "hold-day";
   }
+
+  // ----------------------------------------------------
+  // AVAILABLE
+  // ----------------------------------------------------
 
   return "available-day";
 };
@@ -197,40 +204,51 @@ const getDateType = (date) => {
   // =====================================
 
   const handleDateSelect = (dates) => {
+    if (calendarSource !== "manual") {
+      return alert("Switch to Manual Calendar mode to create manual bookings.");
+    }
+
     const [start, end] = dates;
 
     setStartDate(start);
-
     setEndDate(end);
-  };
 
+    if (start && end) {
+      setShowModal(true);
+    }
+  };
   // =====================================
   // BLOCK DATES
   // =====================================
 
-  const blockDates = async () => {
-    if (!startDate || !endDate) {
-      return alert("Select date range");
+  const saveBooking = async () => {
+    if (calendarSource !== "manual") {
+      return alert("Manual bookings are disabled while iCal mode is active.");
     }
-
     try {
       await api.post(`/calendar/${listingId}/calendar/block`, {
-        start: startDate,
+        startDate,
+        endDate,
 
-        end: endDate,
+        customerName,
+        customerEmail,
+        customerPhone,
+
+        comment,
       });
-
-      alert("Dates blocked");
 
       fetchDates();
 
-      setStartDate(null);
+      setShowModal(false);
 
-      setEndDate(null);
+      setCustomerName("");
+      setCustomerEmail("");
+      setCustomerPhone("");
+      setComment("");
+
+      alert("Booking Saved");
     } catch (err) {
       console.log(err);
-
-      alert("Block failed");
     }
   };
 
@@ -268,36 +286,44 @@ const getDateType = (date) => {
   // IMPORT ICAL
   // =====================================
 
-  const importICal = async () => {
-    if (!icalUrl.trim()) {
-      return alert("Enter iCal URL");
-    }
+  // const importICal = async () => {
+  //   if (calendarSource !== "ical") {
+  //     return alert("Please switch Calendar Mode to iCal first.");
+  //   }
+  //  if (!hasICal) {
+  // return alert("Enter at least one iCal URL");
+  //   }
 
-    try {
-      await api.post(
-        `/calendar/${listingId}/calendar/import-ical`,
+  //   try {
+  //     await api.post(
+  //       `/calendar/${listingId}/calendar/import-ical`,
 
-        {
-          url: icalUrl,
-        },
-      );
+  //       {
+  //         url: hasICal,
+  //       },
+  //     );
 
-      alert("iCal imported successfully");
+  //     alert("iCal imported successfully");
 
-      fetchDates();
-    } catch (err) {
-      console.log(err);
+  //     fetchDates();
+  //   } catch (err) {
+  //     console.log(err);
 
-      alert(err?.response?.data?.error || "iCal failed");
-    }
-  };
+  //     alert(err?.response?.data?.error || "iCal failed");
+  //   }
+  // };
   const resetICal = async () => {
     try {
       await api.put(`/calendar/${listingId}/calendar/reset-ical`);
 
       alert("iCal reset successful");
 
-      setIcalUrl("");
+      setIcalSources([
+        { name: "Airbnb", url: "" },
+        { name: "VRBO", url: "" },
+        { name: "Florida", url: "" },
+        { name: "OwnerRez", url: "" },
+      ]);
 
       fetchDates();
     } catch (err) {
@@ -306,6 +332,84 @@ const getDateType = (date) => {
       alert("Reset failed");
     }
   };
+
+  const clearCalendar = async () => {
+    const confirmReset = window.confirm(
+      "Are you sure? This will remove all bookings.",
+    );
+
+    if (!confirmReset) return;
+
+    try {
+      await api.put(`/calendar/${listingId}/calendar/clear`);
+
+      alert("Calendar reset successfully");
+
+      fetchDates();
+    } catch (err) {
+      console.log(err);
+
+      alert("Reset failed");
+    }
+  };
+
+  const isSelectableDate = (date) => {
+    const key = formatLocalDate(date);
+
+    const statuses = blockedMap[key] || [];
+
+    const hasR = statuses.includes("R");
+    const hasCIN = statuses.includes("CIN");
+    const hasCOUT = statuses.includes("COUT");
+
+    // Turnover date allow
+    if (hasCIN && hasCOUT) return true;
+
+    // Checkout date allow
+    if (hasCOUT) return true;
+
+    // Reserved day block
+    if (hasR) return false;
+
+    return true;
+  };
+
+  const mergeICal = async () => {
+    try {
+      setLoading(true);
+
+      await api.post(`/calendar/${listingId}/calendar/merge-ical`);
+
+      await fetchDates();
+ 
+    } catch (err) {
+      console.error(err);
+
+      console.error(err.response?.data?.message || "Failed to merge calendars");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const addICalSource = () => {
+    setIcalSources((prev) => [
+      ...prev,
+      {
+        name: "",
+        url: "",
+      },
+    ]);
+  };
+
+  const removeICalSource = (index) => {
+    setIcalSources((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // const updateSource = (index, field, value) => {
+  //   const copy = [...icalSources];
+  //   copy[index][field] = value;
+  //   setIcalSources(copy);
+  // };
+
   return (
     <div className="w-full flex justify-center px-3 sm:px-6 py-10 bg-[#f8fafc]">
       {/* CARD */}
@@ -321,65 +425,206 @@ const getDateType = (date) => {
       "
       >
         {/* HEADER */}
-        <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800">
-            Availability Calendar
-          </h2>
+        <div className="mb-8">
+          <label className="block text-sm font-semibold text-gray-700 mb-4">
+            Calendar Source
+          </label>
 
-          <p className="text-center text-gray-500 text-sm mt-2">
-            Manage bookings & imported calendars
-          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* MANUAL */}
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarSource("manual");
+                setStartDate(null);
+                setEndDate(null);
+              }}
+              className={`
+        relative
+        rounded-2xl
+        border-2
+        p-5
+        text-left
+        transition-all
+        duration-300
+        hover:shadow-lg
+        ${
+          !hasICal
+            ? "border-green-500 bg-green-50 shadow-md scale-[1.02]"
+            : "border-gray-200 bg-white hover:border-green-300"
+        }
+      `}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">
+                    📅 Manual Calendar
+                  </h3>
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Manage bookings manually
+                  </p>
+                </div>
+
+                {!hasICal && (
+                  <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">
+                    ✓
+                  </div>
+                )}
+              </div>
+            </button>
+
+            {/* ICAL */}
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarSource("ical");
+                setStartDate(null);
+                setEndDate(null);
+              }}
+              className={`
+        relative
+        rounded-2xl
+        border-2
+        p-5
+        text-left
+        transition-all
+        duration-300
+        hover:shadow-lg
+        ${
+          hasICal
+            ? "border-blue-500 bg-blue-50 shadow-md scale-[1.02]"
+            : "border-gray-200 bg-white hover:border-blue-300"
+        }
+      `}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">
+                    🔗 iCal Sync
+                  </h3>
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Sync Airbnb / VRBO calendar
+                  </p>
+                </div>
+
+                {hasICal && (
+                  <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                    ✓
+                  </div>
+                )}
+              </div>
+            </button>
+          </div>
+
+          {/* STATUS */}
+          <div
+            className={`mt-4 rounded-xl px-4 py-3 text-sm font-medium border ${
+              hasICal
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-green-50 border-green-200 text-green-700"
+            }`}
+          >
+            {hasICal
+              ? "🔗 iCal Sync Active — Manual booking disabled"
+              : "📅 Manual Calendar Active — iCal import disabled"}
+          </div>
         </div>
+        
 
         {/* ICAL SECTION */}
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 mb-6">
-          <input
-            type="text"
-            value={icalUrl}
-            onChange={(e) => setIcalUrl(e.target.value)}
-            placeholder="Paste iCal URL"
-            className="
-            w-full
-            border border-gray-200
-            rounded-xl
-            px-4 py-3
-            text-sm
-            outline-none
-            focus:ring-4
-            focus:ring-blue-100
-            focus:border-blue-500
-            transition-all
-          "
-          />
+        {calendarSource === "ical" && (
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 mb-6">
+            <div className="space-y-4">
+              {icalSources.map((item, index) => (
+                <div key={index}>
+                  <label className="block text-sm font-semibold mb-2">
+                    {item.name} URL
+                  </label>
 
-          <button
-            onClick={importICal}
-            className="
-            
-            
-            px-5
-            py-3
-            bg-blue-600 text-white rounded cursor-pointer
-          "
-          >
-            Import
-          </button>
+                  <input
+                    type="text"
+                    value={item.url}
+                    onChange={(e) => updateSource(index, e.target.value)}
+                    placeholder={`Paste ${item.name} iCal URL`}
+                    className="w-full border rounded-xl px-4 py-3"
+                  />
+                </div>
+              ))}
 
-          <button
-            onClick={resetICal}
-            className="
-            bg-red-500
-            
-            text-white
-            px-5
-            py-3
-            rounded-xl
-            
-          "
-          >
-            Reset
-          </button>
-        </div>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  onClick={saveICalSources}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"
+                >
+                  Save URLs
+                </button>
+
+                <button
+                  onClick={mergeICal}
+                  disabled={loading}
+                  className="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 disabled:opacity-50"
+                >
+                  {loading ? "Merging..." : "Merge Calendars"}
+                </button>
+
+                <button
+                  onClick={resetICal}
+                  className="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            {/* <button
+              onClick={importICal}
+              className="
+      bg-blue-600
+      text-white
+      px-5
+      py-3
+      rounded-xl
+    "
+            >
+              Import
+            </button> */}
+            {/* <button
+              onClick={saveICalSources}
+              className="
+    bg-blue-600
+    text-white
+    px-6
+    py-3
+    rounded-xl
+  "
+            >
+              Save iCal URLs
+            </button> */}
+            {/* <button
+              onClick={mergeICal}
+              disabled={loading}
+              className="
+    bg-green-600
+    text-white
+    px-6
+    py-3
+    rounded-xl
+    hover:bg-green-700
+    disabled:opacity-50
+  "
+            >
+              {loading ? "Merging..." : "Merge Calendars"}
+            </button> */}
+
+            <button
+              
+   
+            >
+              
+            </button>
+          </div>
+        )}
 
         {/* CALENDAR */}
         <div
@@ -413,74 +658,26 @@ const getDateType = (date) => {
 
               current.setHours(0, 0, 0, 0);
 
-              return current >= today;
+              return current >= today && isSelectableDate(date);
             }}
           />
         </div>
 
-        {/* BUTTONS */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <button
-            onClick={blockDates}
-            className="
-            bg-gradient-to-r
-            from-red-500
-            to-rose-500
-            text-white
-            py-3
-            rounded-xl
-            font-semibold
-            shadow-lg
-            hover:scale-[1.01]
-            active:scale-[0.98]
-            transition-all
-          "
-          >
-            Block Dates
-          </button>
-
-          <button
-            onClick={unblockDates}
-            className="
-            bg-gradient-to-r
-            from-emerald-500
-            to-green-500
-            text-white
-            py-3
-            rounded-xl
-            font-semibold
-            shadow-lg
-            hover:scale-[1.01]
-            active:scale-[0.98]
-            transition-all
-          "
-          >
-            Unblock Dates
-          </button>
-        </div>
-
         {/* LEGEND */}
-        <div
-          className="
-          grid
-          grid-cols-2
-          sm:grid-cols-4
-          gap-3
-          mt-7
-          text-xs
-          sm:text-sm
-        "
-        >
+        <div className="flex flex-wrap justify-center gap-5 mt-8">
+          {/* AVAILABLE */}
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded bg-[#d1fae5]"></span>
             Available
           </div>
 
+          {/* BOOKED */}
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded bg-[#5C5CFF]"></span>
             Booked
           </div>
 
+          {/* CHECK-IN */}
           <div className="flex items-center gap-2">
             <span
               className="w-4 h-4 rounded border"
@@ -488,9 +685,10 @@ const getDateType = (date) => {
                 background: "linear-gradient(135deg, #5C5CFF 50%, #d1fae5 50%)",
               }}
             ></span>
-            Check-In
+            Check-Out
           </div>
 
+          {/* CHECK-OUT */}
           <div className="flex items-center gap-2">
             <span
               className="w-4 h-4 rounded border"
@@ -498,13 +696,58 @@ const getDateType = (date) => {
                 background: "linear-gradient(315deg, #5C5CFF 50%, #d1fae5 50%)",
               }}
             ></span>
-            Check-Out
+            Check-In
+          </div>
+
+          {/* TURNOVER */}
+          <div className="flex items-center gap-2">
+            <span className="relative w-4 h-4 rounded bg-[#5C5CFF] overflow-hidden">
+              <span className="absolute w-[140%] h-[2px] bg-black top-1/2 left-[-20%] rotate-135"></span>
+            </span>
+            Turnover
+          </div>
+
+          {/* HOLD */}
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-4 rounded bg-yellow-400"></span>
+            Hold
           </div>
         </div>
       </div>
 
       {/* CSS */}
       <style>{`
+      .react-datepicker__day {
+  transition: all 0.25s ease;
+}
+
+.react-datepicker__day:hover {
+  transform: scale(1.15);
+  z-index: 10;
+}
+
+.react-datepicker__day.available-day:hover {
+  box-shadow: 0 0 12px rgba(34,197,94,.4);
+}
+
+.react-datepicker__day.blocked-day:hover,
+.react-datepicker__day.checkin-day:hover,
+.react-datepicker__day.checkout-day:hover,
+.react-datepicker__day.turnover-day:hover {
+  transform: scale(1.12);
+  filter: brightness(1.08);
+}
+  .react-datepicker__day--in-range {
+  background: #dbeafe !important;
+  color: #111 !important;
+}
+
+.react-datepicker__day--range-start,
+.react-datepicker__day--range-end {
+  background: #2563eb !important;
+  color: white !important;
+  transform: scale(1.1);
+}
 .react-datepicker {
   width: 100% !important;
   border: none !important;
@@ -553,71 +796,156 @@ const getDateType = (date) => {
     background: linear-gradient( 315deg, #d1fae5 50%, #5C5CFF 50% ) !important; 
     color: black !important; 
     } 
-    /* TURNOVER */
+
+   /* TURNOVER */
+   
 .react-datepicker__day.turnover-day {
-
-  position: relative !important;
-
-  isolation: isolate;
-
-  overflow: hidden !important;
-
-  color: black !important;
-
-  z-index: 10 !important;
-}
-
-.react-datepicker__day.turnover-day::before {
-
-  content: "";
-
-  position: absolute;
-
-  inset: 0;
-
-  border-radius: 8px;
-
   background: linear-gradient(
-    to bottom right,
+    135deg,
     #5C5CFF 0%,
-    #5C5CFF 49%,
-    #5C5CFF 51%,
+    #5C5CFF 48%,
+    #000 48%,
+    #000 52%,
+    #5C5CFF 52%,
     #5C5CFF 100%
-  );
+  ) !important;
 
-  z-index: -1;
+  color: white !important;
+
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+
+  border-radius: 8px !important;
 }
-
-.react-datepicker__day.turnover-day::after {
-
-  content: "";
-
-  position: absolute;
-
-  width: 180%;
-
-  height: 3px;
-
-  background: black;
-
-  top: 50%;
-
-  left: -40%;
-
-  transform: rotate(-45deg);
-
-  z-index: 20;
-}
-
      .react-datepicker__day--outside-month { 
      visibility: hidden !important; 
      pointer-events: none !important; 
      } 
-     .react-datepicker__day.past-day 
-     { background: #d1fae5 !important; 
-      color: #94a3b8 !important; opacity: 0.7 !important; cursor: not-allowed !important; } }</style>
+   .react-datepicker__day.past-day {
+  background: #d1fae5 !important;
+  color: #94a3b8 !important;
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+}
 
     `}</style>
+      {showModal && (
+        <div
+          className="
+    fixed
+    inset-0
+    bg-black/50
+    z-50
+    flex
+    items-center
+    justify-center
+  "
+        >
+          <div
+            className="
+    bg-white
+    w-full
+    max-w-2xl
+    rounded-2xl
+    p-6
+  "
+          >
+            <h2 className="text-2xl font-bold mb-6">Create Booking</h2>
+
+            <div className="space-y-4">
+              <input
+                placeholder="Customer Name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="
+    w-full
+    border
+    p-3
+    rounded-lg
+  "
+              />
+
+              <input
+                placeholder="Customer Email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                className="
+    w-full
+    border
+    p-3
+    rounded-lg
+  "
+              />
+
+              <input
+                placeholder="Customer Phone"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                className="
+    w-full
+    border
+    p-3
+    rounded-lg
+  "
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  readOnly
+                  value={startDate ? startDate.toLocaleDateString() : ""}
+                  className="border p-3 rounded-lg"
+                />
+
+                <input
+                  readOnly
+                  value={endDate ? endDate.toLocaleDateString() : ""}
+                  className="border p-3 rounded-lg"
+                />
+              </div>
+
+              <textarea
+                placeholder="Comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="
+    w-full
+    border
+    p-3
+    rounded-lg
+  "
+              />
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="
+    px-5
+    py-3
+    bg-gray-200
+    rounded-lg
+  "
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={saveBooking}
+                className="
+    px-5
+    py-3
+    bg-blue-600
+    text-white
+    rounded-lg
+  "
+              >
+                Save Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
